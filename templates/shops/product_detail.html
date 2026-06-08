@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} | {{ shop.name }}{% endblock %}
+
+{% block content %}
+    <p><a href="{% url 'shop_front' shop.slug %}">← Назад в магазин</a></p>
+    
+    <div style="display: flex; gap: 30px; margin-top: 20px;">
+        <div style="flex: 1;">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; border-radius: 10px;">
+            {% else %}
+                <div style="width: 100%; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
+                    Нет фото
+                </div>
+            {% endif %}
+        </div>
+        
+        <div style="flex: 1;">
+            <h1>{{ product.name }}</h1>
+            <p style="color: #666; margin: 10px 0;">
+                Категория: 
+                {% if product.category %}
+                    <a href="{% url 'category_products' shop.slug product.category.id %}">{{ product.category.name }}</a>
+                {% else %}
+                    Без категории
+                {% endif %}
+            </p>
+            <p style="font-size: 32px; color: #333; font-weight: bold; margin: 20px 0;">
+                {{ product.price }} ₽
+            </p>
+            <p style="margin: 20px 0;">
+                <strong>Наличие:</strong> 
+                {% if product.stock > 0 %}
+                    <span style="color: green;">В наличии ({{ product.stock }} шт.)</span>
+                {% else %}
+                    <span style="color: red;">Нет в наличии</span>
+                {% endif %}
+            </p>
+            <p style="margin: 20px 0; line-height: 1.6;">
+                <strong>Описание:</strong><br>
+                {{ product.description }}
+            </p>
+            
+            {% if product.brand %}
+                <p><strong>Бренд:</strong> {{ product.brand.name }}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

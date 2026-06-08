@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление: {{ shop.name }}{% endblock %}
+
+{% block content %}
+    <h1>Управление магазином: {{ shop.name }}</h1>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <a href="{% url 'shop_front' shop.slug %}" class="button" target="_blank"> Смотреть витрину</a>
+        <a href="/admin/shops/product/add/?shop={{ shop.id }}" class="button"> Добавить товар</a>
+        <a href="/admin/shops/category/add/?shop={{ shop.id }}" class="button"> Добавить категорию</a>
+        <a href="/admin/shops/news/add/?shop={{ shop.id }}" class="button"> Добавить новость</a>
+    </div>
+    
+    <hr>
+    
+    <h2>Товары ({{ products|length }})</h2>
+    {% if products %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Цена</th>
+                    <th>В наличии</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.category.name|default:"—" }}</td>
+                        <td>{{ product.price }} ₽</td>
+                        <td>{{ product.stock }}</td>
+                        <td>
+                            <a href="/admin/shops/product/{{ product.id }}/change/"> Ред.</a>
+                            <a href="{% url 'delete_product' shop.slug product.id %}" onclick="return confirm('Удалить товар?')"> Удалить</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Нет товаров. <a href="/admin/shops/product/add/?shop={{ shop.id }}">Добавить первый товар</a></p>
+    {% endif %}
+    
+    <hr>
+    
+    <h2>Категории ({{ categories|length }})</h2>
+    {% if categories %}
+        <ul>
+            {% for category in categories %}
+                <li>
+                    {{ category.name }}
+                    <a href="/admin/shops/category/{{ category.id }}/change/"> Ред.</a>
+                    <a href="{% url 'delete_category' shop.slug category.id %}" onclick="return confirm('Удалить категорию?')"> Удалить</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Нет категорий. <a href="/admin/shops/category/add/?shop={{ shop.id }}">Добавить категорию</a></p>
+    {% endif %}
+    
+    <hr>
+    
+    <h2>Новости ({{ news_list|length }})</h2>
+    {% if news_list %}
+        <ul>
+            {% for news in news_list %}
+                <li>
+                    <strong>{{ news.title }}</strong> ({{ news.created_at|date:"d.m.Y" }})
+                    <a href="/admin/shops/news/{{ news.id }}/change/"> Ред.</a>
+                    <a href="{% url 'delete_news' shop.slug news.id %}" onclick="return confirm('Удалить новость?')"> Удалить</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Нет новостей. <a href="/admin/shops/news/add/?shop={{ shop.id }}">Добавить новость</a></p>
+    {% endif %}
+    
+    <hr>
+    
+    <p><a href="{% url 'my_shops' %}">← Назад к моим магазинам</a></p>
+{% endblock %}

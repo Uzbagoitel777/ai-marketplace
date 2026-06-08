@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление: {{ shop.name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ shop.name }}</h1>
+    <p>{{ shop.description }}</p>
+    
+    <p>
+        <strong>URL магазина:</strong> 
+        <a href="{% url 'shop_front' shop.slug %}" target="_blank">/shop/{{ shop.slug }}/</a>
+    </p>
+    
+    <hr style="margin: 20px 0;">
+    
+    <h2>Статистика</h2>
+    <ul>
+        <li>Товаров: {{ products_count }}</li>
+        <li>Категорий: {{ categories_count }}</li>
+        <li>Брендов: {{ brands_count }}</li>
+        <li>Новостей: {{ news_count }}</li>
+    </ul>
+    
+    <hr style="margin: 20px 0;">
+    
+    <h2>Быстрые действия</h2>
+    <p>
+        <a href="{% url 'shop_manage' shop.slug %}" class="button">📋 Управление контентом</a>
+    </p>
+    
+    <hr style="margin: 20px 0;">
+    
+    <h2>Ссылки на админку</h2>
+    <ul>
+        <li><a href="/admin/shops/product/?shop__id__exact={{ shop.id }}">Управлять товарами</a></li>
+        <li><a href="/admin/shops/category/?shop__id__exact={{ shop.id }}">Управлять категориями</a></li>
+        <li><a href="/admin/shops/brand/?shop__id__exact={{ shop.id }}">Управлять брендами</a></li>
+        <li><a href="/admin/shops/news/?shop__id__exact={{ shop.id }}">Управлять новостями</a></li>
+    </ul>
+    
+    <hr style="margin: 20px 0;">
+    
+    <p>
+        <a href="{% url 'my_shops' %}">← Назад к моим магазинам</a>
+    </p>
+{% endblock %}
