@@ -13,34 +13,85 @@
     
     <hr style="margin: 20px 0;">
     
-    <h2>Статистика</h2>
-    <ul>
-        <li>Товаров: {{ products_count }}</li>
-        <li>Категорий: {{ categories_count }}</li>
-        <li>Брендов: {{ brands_count }}</li>
-        <li>Новостей: {{ news_count }}</li>
-    </ul>
+    <h2>Статистика магазина</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+        <div style="background: #2196F3; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 32px; font-weight: bold;">{{ products_count }}</div>
+            <div>Товаров</div>
+        </div>
+        <div style="background: #4CAF50; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 32px; font-weight: bold;">{{ categories_count }}</div>
+            <div>Категорий</div>
+        </div>
+        <div style="background: #FF9800; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 32px; font-weight: bold;">{{ orders_count }}</div>
+            <div>Заказов</div>
+        </div>
+        <div style="background: #9C27B0; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 32px; font-weight: bold;">{{ total_revenue }} руб.</div>
+            <div>Выручка</div>
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 20px; margin: 20px 0;">
+        <div style="flex: 1; background: #f5f5f5; padding: 15px; border-radius: 10px;">
+            <h3>Статусы заказов</h3>
+            <ul style="list-style: none;">
+                <li>Новые: {{ orders_by_status.new }}</li>
+                <li>В обработке: {{ orders_by_status.processing }}</li>
+                <li>Отправлены: {{ orders_by_status.shipped }}</li>
+                <li>Доставлены: {{ orders_by_status.delivered }}</li>
+                <li>Отменены: {{ orders_by_status.cancelled }}</li>
+            </ul>
+        </div>
+        
+        <div style="flex: 1; background: #f5f5f5; padding: 15px; border-radius: 10px;">
+            <h3>Популярные товары</h3>
+            {% if popular_products %}
+                <ol>
+                    {% for product in popular_products %}
+                        <li>{{ product.name }} — продано {{ product.total_sold }} шт.</li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <p>Пока нет продаж</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; margin: 20px 0;">
+        <h3>Заказы за последние 7 дней</h3>
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Заказов</th>
+                    <th>Выручка</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in orders_by_day %}
+                    <tr>
+                        <td>{{ day.date }}</td>
+                        <td>{{ day.count }}</td>
+                        <td>{{ day.revenue }} руб.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     
     <hr style="margin: 20px 0;">
     
     <h2>Быстрые действия</h2>
     <p>
-        <a href="{% url 'shop_manage' shop.slug %}" class="button">📋 Управление контентом</a>
+        <a href="{% url 'shop_manage' shop.slug %}" class="button">Управление контентом</a>
+        <a href="{% url 'my_orders' shop.slug %}" class="button" style="background: #2196F3;">Заказы покупателей</a>
     </p>
     
     <hr style="margin: 20px 0;">
     
-    <h2>Ссылки на админку</h2>
-    <ul>
-        <li><a href="/admin/shops/product/?shop__id__exact={{ shop.id }}">Управлять товарами</a></li>
-        <li><a href="/admin/shops/category/?shop__id__exact={{ shop.id }}">Управлять категориями</a></li>
-        <li><a href="/admin/shops/brand/?shop__id__exact={{ shop.id }}">Управлять брендами</a></li>
-        <li><a href="/admin/shops/news/?shop__id__exact={{ shop.id }}">Управлять новостями</a></li>
-    </ul>
-    
-    <hr style="margin: 20px 0;">
-    
     <p>
-        <a href="{% url 'my_shops' %}">← Назад к моим магазинам</a>
+        <a href="{% url 'my_shops' %}">Назад к моим магазинам</a>
     </p>
 {% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои заказы - {{ shop.name }}{% endblock %}
+
+{% block content %}
+    <h1>Мои заказы</h1>
+    
+    {% if orders %}
+        {% for order in orders %}
+            <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                    <h3>Заказ #{{ order.id }}</h3>
+                    <span style="background: 
+                        {% if order.status == 'new' %}orange
+                        {% elif order.status == 'processing' %}blue
+                        {% elif order.status == 'delivered' %}green
+                        {% else %}gray{% endif %}; 
+                        color: white; padding: 5px 10px; border-radius: 5px;">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+                <p><strong>Дата:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                <p><strong>Сумма:</strong> {{ order.total_amount }} руб.</p>
+                <p><strong>Адрес:</strong> {{ order.address }}</p>
+                
+                <details>
+                    <summary style="cursor: pointer; color: #2196F3;">Состав заказа</summary>
+                    <ul style="margin-top: 10px;">
+                        {% for item in order.items.all %}
+                            <li>{{ item.product.name }} x {{ item.quantity }} = {{ item.total_price }} руб.</li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>У вас пока нет заказов</p>
+    {% endif %}
+    
+    <p><a href="{% url 'shop_front' shop.slug %}">Вернуться в магазин</a></p>
+{% endblock %}

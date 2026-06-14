@@ -27,7 +27,7 @@
                 {% endif %}
             </p>
             <p style="font-size: 32px; color: #333; font-weight: bold; margin: 20px 0;">
-                {{ product.price }} ₽
+                {{ product.price }} руб.
             </p>
             <p style="margin: 20px 0;">
                 <strong>Наличие:</strong> 
@@ -37,6 +37,21 @@
                     <span style="color: red;">Нет в наличии</span>
                 {% endif %}
             </p>
+            
+            {% if product.stock > 0 %}
+                <form method="post" action="{% url 'add_to_cart' shop.slug product.id %}" style="margin: 20px 0;">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 80px; padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    <button type="submit" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                        Добавить в корзину
+                    </button>
+                </form>
+            {% else %}
+                <p style="color: red; margin: 20px 0; padding: 10px; background: #ffe0e0; border-radius: 5px;">
+                    Товара нет в наличии
+                </p>
+            {% endif %}
+            
             <p style="margin: 20px 0; line-height: 1.6;">
                 <strong>Описание:</strong><br>
                 {{ product.description }}

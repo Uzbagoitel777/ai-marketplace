@@ -71,3 +71,97 @@ class News(models.Model):
         verbose_name = 'Новость'
         verbose_name_plural = 'Новости'
         ordering = ['-created_at']
+
+
+# ========== Корзина, Заказы, Аналитика ==========
+
+class Cart(models.Model):
+    """Корзина пользователя"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts')
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='carts')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Корзина {self.user.username} - {self.shop.name}"
+    
+    def total_price(self):
+        return sum(item.total_price() for item in self.items.all())
+    
+    def total_items(self):
+        return sum(item.quantity for item in self.items.all())
+    
+    class Meta:
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзины'
+
+class CartItem(models.Model):
+    """Товар в корзине"""
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"
+    
+    def total_price(self):
+        return self.product.price * self.quantity
+    
+    class Meta:
+        verbose_name = 'Товар в корзине'
+        verbose_name_plural = 'Товары в корзине'
+
+class Order(models.Model):
+    """Заказ"""
+    STATUS_CHOICES = [
+        ('new', 'Новый'),
+        ('processing', 'В обработке'),
+        ('shipped', 'Отправлен'),
+        ('delivered', 'Доставлен'),
+        ('cancelled', 'Отменён'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='orders')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Данные покупателя
+    full_name = models.CharField(max_length=200, verbose_name='ФИО')
+    phone = models.CharField(max_length=20, verbose_name='Телефон')
+    address = models.TextField(verbose_name='Адрес доставки')
+    comment = models.TextField(blank=True, verbose_name='Комментарий')
+    
+    # Статус и сумма
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name='Статус')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Общая сумма')
+    
+    def __str__(self):
+        return f"Заказ #{self.id} - {self.user.username}"
+    
+    def update_total(self):
+        total = sum(item.total_price() for item in self.items.all())
+        self.total_amount = total
+        self.save(update_fields=['total_amount'])
+    
+    class Meta:
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+        ordering = ['-created_at']
+
+class OrderItem(models.Model):
+    """Товар в заказе"""
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)  # Цена на момент покупки
+    
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"
+    
+    def total_price(self):
+        return self.price * self.quantity
+    
+    class Meta:
+        verbose_name = 'Товар в заказе'
+        verbose_name_plural = 'Товары в заказе'

@@ -124,12 +124,17 @@ def ai_chat(request, shop_slug):
             
             # Собираем информацию о товарах магазина
             products = shop.products.all()[:20]
-            products_info = "\n".join([f"- {p.name}: {p.price} руб. (в наличии: {p.stock} шт.)" for p in products])
+            if products.exists():
+                products_info = "\n".join([f"- {p.name}: {p.price} руб. (в наличии: {p.stock} шт.)" for p in products])
+            else:
+                products_info = "В магазине пока нет товаров"
             
             ai = init_ai()
             answer = ai.chat_with_customer(question, products_info)
             
             return JsonResponse({'answer': answer})
+        except Shop.DoesNotExist:
+            return JsonResponse({'answer': 'Магазин не найден'}, status=404)
         except Exception as e:
             return JsonResponse({'answer': f'Извините, произошла ошибка: {str(e)}'})
     

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Корзина - {{ shop.name }}{% endblock %}
+
+{% block content %}
+    <h1>Корзина</h1>
+    
+    {% if cart.items.all %}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f2f2f2;">
+                    <th style="padding: 10px; text-align: left;">Товар</th>
+                    <th style="padding: 10px; text-align: left;">Цена</th>
+                    <th style="padding: 10px; text-align: left;">Количество</th>
+                    <th style="padding: 10px; text-align: left;">Сумма</th>
+                    <th style="padding: 10px; text-align: left;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart.items.all %}
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 10px;">{{ item.product.name }}</td>
+                        <td style="padding: 10px;">{{ item.product.price }} руб.</td>
+                        <td style="padding: 10px;">
+                            <form method="post" action="{% url 'update_cart_item' shop.slug item.id %}" style="display: flex; gap: 5px;">
+                                {% csrf_token %}
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}" style="width: 60px; padding: 5px;">
+                                <button type="submit" style="background: #2196F3; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Обновить</button>
+                            </form>
+                        </td>
+                        <td style="padding: 10px;">{{ item.total_price }} руб.</td>
+                        <td style="padding: 10px;">
+                            <a href="{% url 'remove_from_cart' shop.slug item.id %}" onclick="return confirm('Удалить товар?')" style="color: red;">Удалить</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr style="background: #f2f2f2; font-weight: bold;">
+                    <td colspan="3" style="padding: 10px; text-align: right;">Итого:</td>
+                    <td colspan="2" style="padding: 10px;">{{ cart.total_price }} руб.</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 20px;">
+            <a href="{% url 'shop_front' shop.slug %}" style="background: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Продолжить покупки</a>
+            <a href="{% url 'checkout' shop.slug %}" style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-left: 10px;">Оформить заказ</a>
+        </div>
+    {% else %}
+        <p>Корзина пуста</p>
+        <p><a href="{% url 'shop_front' shop.slug %}">Вернуться к покупкам</a></p>
+    {% endif %}
+{% endblock %}
