@@ -134,3 +134,12 @@ TEMPLATES[0]['DIRS'] = [os.path.join(BASE_DIR, 'templates')]
 # Настройка статических файлов
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# API настройки
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Hugging Face Inference API настройки
+HF_TOKEN = os.getenv('HF_TOKEN')

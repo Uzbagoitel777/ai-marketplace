@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать магазин с ИИ{% endblock %}
+
+{% block content %}
+    <h1>Создать магазин с помощью ИИ</h1>
+    <p>Расскажите, какой магазин вы хотите создать, и искусственный интеллект поможет вам!</p>
+    
+    <form method="post" style="max-width: 600px; margin-top: 30px;">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 20px;">
+            <label for="shop_name" style="display: block; margin-bottom: 8px; font-weight: bold;">Название магазина:</label>
+            <input type="text" name="shop_name" id="shop_name" required 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"
+                   placeholder="Например: TechStore, FashionShop, SportMaster">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="shop_description" style="display: block; margin-bottom: 8px; font-weight: bold;">Что вы продаете? (необязательно):</label>
+            <textarea name="shop_description" id="shop_description" rows="4" 
+                      style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"
+                      placeholder="Например: электроника, смартфоны, ноутбуки, аксессуары..."></textarea>
+        </div>
+        
+        <button type="submit" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+            Сгенерировать магазин с ИИ
+        </button>
+        <a href="{% url 'my_shops' %}" style="margin-left: 10px;">Отмена</a>
+    </form>
+    
+    <hr style="margin: 30px 0;">
+    
+    <div style="background: #f0f8ff; padding: 20px; border-radius: 10px;">
+        <h3>Примеры запросов:</h3>
+        <ul>
+            <li>Магазин спортивных товаров (кроссовки, футболки, фитнес-аксессуары)</li>
+            <li>Интернет-магазин электроники и гаджетов</li>
+            <li>Магазин товаров для дома и кухни</li>
+            <li>Бутик женской одежды и аксессуаров</li>
+            <li>Магазин игрушек для детей</li>
+        </ul>
+    </div>
+{% endblock %}
