@@ -8,39 +8,40 @@ from .services.hf_inference import HuggingFaceInference
 from shops.models import Shop, Category
 
 def init_ai():
-    """Инициализация Hugging Face Inference API"""
     return HuggingFaceInference()
 
 @login_required
 def ai_create_shop(request):
-    """Создание магазина с помощью ИИ"""
     if request.method == 'POST':
         shop_name = request.POST.get('shop_name')
         shop_description = request.POST.get('shop_description', '')
+        design_description = request.POST.get('design_description', '')
         
         if not shop_name:
             messages.error(request, 'Введите название магазина')
             return redirect('ai_create_shop')
         
         try:
-            # Генерируем описание через ИИ
             ai = init_ai()
+            
             generated_description = ai.generate_shop_description(shop_name, shop_description)
-            
-            # Генерируем категории
             categories = ai.generate_categories(shop_name, shop_description)
+            custom_css = ai.generate_custom_css(shop_name, design_description)
             
-            # Сохраняем в сессию для следующего шага
             request.session['ai_shop_data'] = {
                 'name': shop_name,
                 'description': generated_description,
-                'categories': categories
+                'categories': categories,
+                'custom_css': custom_css,
+                'design_description': design_description,
             }
             
             return render(request, 'ai_assistant/confirm_shop.html', {
                 'shop_name': shop_name,
                 'generated_description': generated_description,
-                'categories': categories
+                'categories': categories,
+                'custom_css': custom_css,
+                'design_description': design_description,
             })
         except Exception as e:
             messages.error(request, f'Ошибка при генерации: {str(e)}')
@@ -50,14 +51,12 @@ def ai_create_shop(request):
 
 @login_required
 def confirm_create_shop(request):
-    """Подтверждение создания магазина с ИИ-контентом"""
     if request.method == 'POST':
         shop_data = request.session.get('ai_shop_data')
         if not shop_data:
             messages.error(request, 'Данные не найдены, начните заново')
             return redirect('ai_create_shop')
         
-        # Создаем магазин
         slug = slugify(shop_data['name'])
         if not slug:
             slug = f"shop-{request.user.id}-{int(time.time())}"
@@ -72,10 +71,10 @@ def confirm_create_shop(request):
             owner=request.user,
             name=shop_data['name'],
             slug=slug,
-            description=shop_data['description']
+            description=shop_data['description'],
+            custom_css=shop_data.get('custom_css', ''),
         )
         
-        # Создаем категории
         for category_name in shop_data['categories'][:5]:
             if category_name and len(category_name) <= 100:
                 Category.objects.create(
@@ -86,7 +85,6 @@ def confirm_create_shop(request):
         
         messages.success(request, f'Магазин "{shop.name}" успешно создан с помощью ИИ!')
         
-        # Очищаем сессию
         if 'ai_shop_data' in request.session:
             del request.session['ai_shop_data']
         
@@ -96,7 +94,6 @@ def confirm_create_shop(request):
 
 @login_required
 def generate_product_description_ajax(request):
-    """AJAX-генерация описания товара"""
     if request.method == 'POST':
         import json
         data = json.loads(request.body)
@@ -111,7 +108,6 @@ def generate_product_description_ajax(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def ai_chat(request, shop_slug):
-    """ИИ-чат на витрине магазина"""
     from shops.models import Shop
     
     if request.method == 'POST':
@@ -122,7 +118,6 @@ def ai_chat(request, shop_slug):
         try:
             shop = Shop.objects.get(slug=shop_slug)
             
-            # Собираем информацию о товарах магазина
             products = shop.products.all()[:20]
             if products.exists():
                 products_info = "\n".join([f"- {p.name}: {p.price} руб. (в наличии: {p.stock} шт.)" for p in products])

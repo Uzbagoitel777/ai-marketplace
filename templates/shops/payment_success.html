@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Оплата прошла успешно - {{ shop.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card" style="text-align: center; padding: 48px;">
+        <div style="width: 80px; height: 80px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 40px;">
+            ✓
+        </div>
+        
+        <h1 style="color: var(--success); margin-bottom: 16px;">Оплата прошла успешно</h1>
+        
+        <div style="background: var(--gray-100); border-radius: var(--radius-md); padding: 24px; margin: 24px 0; text-align: left;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                <div>
+                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Номер заказа</div>
+                    <div style="font-weight: 600;">#{{ order.id }}</div>
+                </div>
+                <div>
+                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Сумма оплаты</div>
+                    <div style="font-weight: 600; color: var(--primary);">{{ payment.amount }} ₽</div>
+                </div>
+                <div>
+                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Способ оплаты</div>
+                    <div style="font-weight: 600;">{{ payment.get_payment_method_display|default:payment.payment_method }}</div>
+                </div>
+                <div>
+                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Номер транзакции</div>
+                    <div style="font-weight: 600;">{{ payment.transaction_id }}</div>
+                </div>
+                <div style="grid-column: span 2;">
+                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Статус</div>
+                    <div><span class="badge badge-success">Оплачен</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <p style="margin-bottom: 16px;">Статус вашего заказа: <strong>В обработке</strong></p>
+        <p style="color: var(--gray-600); margin-bottom: 32px;">Мы свяжемся с вами для подтверждения доставки.</p>
+        
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'customer_orders' shop.slug %}" class="btn btn-primary" style="padding: 12px 32px;">
+                Мои заказы
+            </a>
+            <a href="{% url 'shop_front' shop.slug %}" class="btn btn-secondary" style="padding: 12px 32px;">
+                Вернуться в магазин
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

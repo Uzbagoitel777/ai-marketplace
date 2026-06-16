@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказ #{{ order.id }} - {{ shop.name }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'customer_profile' shop.slug %}">Личный кабинет</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'customer_orders' shop.slug %}">Мои заказы</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Заказ #{{ order.id }}</span>
+</div>
+
+<h1>Заказ #{{ order.id }}</h1>
+
+<div style="display: flex; gap: 32px; flex-wrap: wrap;">
+    <!-- Информация о заказе -->
+    <div style="flex: 1;">
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="card-body">
+                <h3>Информация о заказе</h3>
+                <div style="margin-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-200);">
+                        <span style="color: var(--gray-600);">Дата заказа:</span>
+                        <span>{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-200);">
+                        <span style="color: var(--gray-600);">Статус:</span>
+                        <span>
+                            <span class="badge 
+                                {% if order.status == 'new' %}badge-warning
+                                {% elif order.status == 'processing' %}badge-info
+                                {% elif order.status == 'shipped' %}badge-info
+                                {% elif order.status == 'delivered' %}badge-success
+                                {% elif order.status == 'cancelled' %}badge-danger
+                                {% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-200);">
+                        <span style="color: var(--gray-600);">Сумма заказа:</span>
+                        <span style="font-size: 20px; font-weight: 700; color: var(--primary);">{{ order.total_amount }} ₽</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h3>Данные доставки</h3>
+                <div style="margin-top: 16px;">
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Получатель</div>
+                        <div style="font-weight: 500;">{{ order.full_name }}</div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Телефон</div>
+                        <div style="font-weight: 500;">{{ order.phone }}</div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Адрес доставки</div>
+                        <div style="font-weight: 500;">{{ order.address }}</div>
+                    </div>
+                    {% if order.comment %}
+                        <div>
+                            <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Комментарий</div>
+                            <div style="font-weight: 500;">{{ order.comment }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Состав заказа -->
+    <div style="flex: 1.5;">
+        <div class="card">
+            <div class="card-body">
+                <h3>Состав заказа</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Кол-во</th>
+                            <th>Цена</th>
+                            <th>Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.price }} ₽</td>
+                                <td>{{ item.total_price }} ₽</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="font-weight: 600; border-top: 2px solid var(--gray-300);">
+                            <td colspan="3" style="text-align: right;">Итого:</td>
+                            <td>{{ order.total_amount }} ₽</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                {% if order.payment %}
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-200);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: var(--gray-600);">Способ оплаты:</span>
+                            <span>{{ order.payment.get_payment_method_display|default:order.payment.payment_method }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--gray-600);">Статус оплаты:</span>
+                            <span>
+                                {% if order.payment.status == 'paid' %}
+                                    <span class="badge badge-success">Оплачено</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Ожидает оплаты</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{% url 'customer_orders' shop.slug %}" class="btn btn-secondary">← Назад к заказам</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

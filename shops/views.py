@@ -6,9 +6,38 @@ from django.http import JsonResponse
 from django.utils.text import slugify
 from django.db import models as django_models
 from django.core.paginator import Paginator
-from .models import Shop, Category, Brand, Product, News, Cart, CartItem, Order, OrderItem
+from django.contrib.auth.models import User
+from .models import Shop, Category, Brand, Product, News, Cart, CartItem, Order, OrderItem, Favorite, Payment
 
-# ========== Панель управления (для владельца) ==========
+
+def home(request):
+    """Главная страница - витрина всех магазинов"""
+    shops = Shop.objects.all().order_by('-created_at')
+    
+    # Поиск магазинов
+    query = request.GET.get('q', '')
+    if query:
+        shops = shops.filter(name__icontains=query)
+    
+    # Пагинация
+    paginator = Paginator(shops, 9)
+    page_number = request.GET.get('page', 1)
+    shops_page = paginator.get_page(page_number)
+    
+    # Статистика для главной
+    total_shops = Shop.objects.count()
+    total_products = Product.objects.count()
+    total_users = User.objects.count()
+    
+    context = {
+        'shops': shops_page,
+        'query': query,
+        'total_shops': total_shops,
+        'total_products': total_products,
+        'total_users': total_users,
+    }
+    return render(request, 'home.html', context)
+
 
 @login_required
 def my_shops(request):
@@ -438,3 +467,185 @@ def my_orders(request, shop_slug):
         'orders': orders,
     }
     return render(request, 'shops/my_orders.html', context)
+
+# ========== Избранное (лайки) ==========
+
+@login_required
+def add_to_favorites(request, shop_slug, product_id):
+    """Добавить товар в избранное"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    product = get_object_or_404(Product, id=product_id, shop=shop)
+    
+    favorite, created = Favorite.objects.get_or_create(
+        user=request.user,
+        product=product
+    )
+    
+    if created:
+        messages.success(request, f'Товар "{product.name}" добавлен в избранное')
+    else:
+        messages.info(request, f'Товар "{product.name}" уже в избранном')
+    
+    return redirect('product_detail', shop_slug=shop_slug, product_id=product_id)
+
+@login_required
+def remove_from_favorites(request, shop_slug, product_id):
+    """Удалить товар из избранного"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    product = get_object_or_404(Product, id=product_id, shop=shop)
+    
+    Favorite.objects.filter(user=request.user, product=product).delete()
+    messages.success(request, f'Товар "{product.name}" удалён из избранного')
+    
+    return redirect('product_detail', shop_slug=shop_slug, product_id=product_id)
+
+@login_required
+def favorites_list(request, shop_slug):
+    """Страница избранных товаров"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    favorites = Favorite.objects.filter(user=request.user, product__shop=shop)
+    
+    context = {
+        'shop': shop,
+        'favorites': favorites,
+    }
+    return render(request, 'shops/favorites.html', context)
+
+# ========== Личный кабинет покупателя ==========
+
+from accounts.models import CustomerProfile
+
+@login_required
+def customer_profile(request, shop_slug):
+    """Личный кабинет покупателя"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    profile, created = CustomerProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        phone = request.POST.get('phone')
+        address = request.POST.get('address')
+        
+        profile.phone = phone
+        profile.address = address
+        profile.save()
+        
+        messages.success(request, 'Профиль успешно обновлён')
+        return redirect('customer_profile', shop_slug=shop_slug)
+    
+    # Заказы пользователя
+    orders = Order.objects.filter(user=request.user, shop=shop).order_by('-created_at')
+    
+    # Избранные товары
+    favorites = Favorite.objects.filter(user=request.user, product__shop=shop)
+    
+    context = {
+        'shop': shop,
+        'profile': profile,
+        'orders': orders,
+        'favorites': favorites,
+    }
+    return render(request, 'shops/customer_profile.html', context)
+
+@login_required
+def customer_orders(request, shop_slug):
+    """Страница заказов покупателя"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    orders = Order.objects.filter(user=request.user, shop=shop).order_by('-created_at')
+    
+    context = {
+        'shop': shop,
+        'orders': orders,
+    }
+    return render(request, 'shops/customer_orders.html', context)
+
+@login_required
+def customer_order_detail(request, shop_slug, order_id):
+    """Детальная страница заказа"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    order = get_object_or_404(Order, id=order_id, user=request.user, shop=shop)
+    
+    context = {
+        'shop': shop,
+        'order': order,
+    }
+    return render(request, 'shops/customer_order_detail.html', context)
+
+# ========== Тестовая оплата ==========
+
+@login_required
+def payment_page(request, shop_slug, order_id):
+    """Страница оплаты заказа"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    order = get_object_or_404(Order, id=order_id, user=request.user, shop=shop)
+    
+    # Создаем или получаем платеж
+    payment, created = Payment.objects.get_or_create(
+        order=order,
+        defaults={
+            'amount': order.total_amount,
+            'status': 'pending'
+        }
+    )
+    
+    context = {
+        'shop': shop,
+        'order': order,
+        'payment': payment,
+    }
+    return render(request, 'shops/payment.html', context)
+
+@login_required
+def process_payment(request, shop_slug, order_id):
+    """Обработка тестового платежа"""
+    if request.method == 'POST':
+        shop = get_object_or_404(Shop, slug=shop_slug)
+        order = get_object_or_404(Order, id=order_id, user=request.user, shop=shop)
+        payment = Payment.objects.get(order=order)
+        
+        # Получаем способ оплаты из формы
+        payment_method = request.POST.get('payment_method', 'test')
+        
+        # Симуляция успешного платежа
+        import uuid
+        transaction_id = str(uuid.uuid4())[:8]
+        
+        # Обновляем статус платежа
+        payment.status = 'paid'
+        payment.payment_method = payment_method
+        payment.transaction_id = transaction_id
+        payment.save()
+        
+        # Обновляем статус заказа
+        order.status = 'processing'
+        order.save()
+        
+        messages.success(request, f'Оплата прошла успешно! Номер транзакции: {transaction_id}')
+        return redirect('payment_success', shop_slug=shop_slug, order_id=order.id)
+    
+    return redirect('payment_page', shop_slug=shop_slug, order_id=order_id)
+
+@login_required
+def payment_success(request, shop_slug, order_id):
+    """Страница успешной оплаты"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    order = get_object_or_404(Order, id=order_id, user=request.user, shop=shop)
+    payment = Payment.objects.get(order=order)
+    
+    context = {
+        'shop': shop,
+        'order': order,
+        'payment': payment,
+    }
+    return render(request, 'shops/payment_success.html', context)
+
+@login_required
+def payment_failed(request, shop_slug, order_id):
+    """Страница неудачной оплаты (для демонстрации)"""
+    shop = get_object_or_404(Shop, slug=shop_slug)
+    order = get_object_or_404(Order, id=order_id, user=request.user, shop=shop)
+    
+    context = {
+        'shop': shop,
+        'order': order,
+    }
+    return render(request, 'shops/payment_failed.html', context)

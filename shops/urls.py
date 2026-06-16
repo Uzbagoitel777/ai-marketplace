@@ -22,6 +22,16 @@ urlpatterns = [
     path('<slug:shop_slug>/order-confirmation/<int:order_id>/', views.order_confirmation, name='order_confirmation'),
     path('<slug:shop_slug>/my-orders/', views.my_orders, name='my_orders'),
     
+    # Избранное
+    path('<slug:shop_slug>/favorites/', views.favorites_list, name='favorites_list'),
+    path('<slug:shop_slug>/add-to-favorites/<int:product_id>/', views.add_to_favorites, name='add_to_favorites'),
+    path('<slug:shop_slug>/remove-from-favorites/<int:product_id>/', views.remove_from_favorites, name='remove_from_favorites'),
+    
+    # Личный кабинет покупателя
+    path('<slug:shop_slug>/profile/', views.customer_profile, name='customer_profile'),
+    path('<slug:shop_slug>/orders/', views.customer_orders, name='customer_orders'),
+    path('<slug:shop_slug>/order/<int:order_id>/', views.customer_order_detail, name='customer_order_detail'),
+    
     # Поиск
     path('<slug:shop_slug>/search/', views.search_products, name='search_products'),
     
@@ -31,4 +41,10 @@ urlpatterns = [
     path('<slug:shop_slug>/category/<int:category_id>/', views.category_products, name='category_products'),
     path('<slug:shop_slug>/product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('<slug:shop_slug>/', views.shop_front, name='shop_front'),
+
+    # Оплата
+    path('<slug:shop_slug>/payment/<int:order_id>/', views.payment_page, name='payment_page'),
+    path('<slug:shop_slug>/process-payment/<int:order_id>/', views.process_payment, name='process_payment'),
+    path('<slug:shop_slug>/payment-success/<int:order_id>/', views.payment_success, name='payment_success'),
+    path('<slug:shop_slug>/payment-failed/<int:order_id>/', views.payment_failed, name='payment_failed'),
 ]

@@ -6,6 +6,7 @@ class Shop(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название магазина')
     slug = models.SlugField(unique=True, verbose_name='URL-адрес')
     description = models.TextField(blank=True, verbose_name='Описание')
+    custom_css = models.TextField(blank=True, null=True, verbose_name='Кастомный CSS')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     
     def __str__(self):
@@ -72,11 +73,7 @@ class News(models.Model):
         verbose_name_plural = 'Новости'
         ordering = ['-created_at']
 
-
-# ========== Корзина, Заказы, Аналитика ==========
-
 class Cart(models.Model):
-    """Корзина пользователя"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts')
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='carts')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -96,7 +93,6 @@ class Cart(models.Model):
         verbose_name_plural = 'Корзины'
 
 class CartItem(models.Model):
-    """Товар в корзине"""
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
@@ -112,7 +108,6 @@ class CartItem(models.Model):
         verbose_name_plural = 'Товары в корзине'
 
 class Order(models.Model):
-    """Заказ"""
     STATUS_CHOICES = [
         ('new', 'Новый'),
         ('processing', 'В обработке'),
@@ -126,13 +121,11 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Данные покупателя
     full_name = models.CharField(max_length=200, verbose_name='ФИО')
     phone = models.CharField(max_length=20, verbose_name='Телефон')
     address = models.TextField(verbose_name='Адрес доставки')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
     
-    # Статус и сумма
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name='Статус')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Общая сумма')
     
@@ -150,11 +143,10 @@ class Order(models.Model):
         ordering = ['-created_at']
 
 class OrderItem(models.Model):
-    """Товар в заказе"""
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # Цена на момент покупки
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
@@ -165,3 +157,39 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = 'Товар в заказе'
         verbose_name_plural = 'Товары в заказе'
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user', 'product']
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
+
+class Payment(models.Model):
+    PAYMENT_STATUS = [
+        ('pending', 'Ожидает оплаты'),
+        ('paid', 'Оплачен'),
+        ('failed', 'Ошибка'),
+        ('refunded', 'Возврат'),
+    ]
+    
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма')
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending', verbose_name='Статус')
+    payment_method = models.CharField(max_length=50, blank=True, verbose_name='Способ оплаты')
+    transaction_id = models.CharField(max_length=100, blank=True, verbose_name='ID транзакции')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Платеж для заказа #{self.order.id} - {self.status}"
+    
+    class Meta:
+        verbose_name = 'Платеж'
+        verbose_name_plural = 'Платежи'

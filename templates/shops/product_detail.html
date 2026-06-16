@@ -3,63 +3,81 @@
 {% block title %}{{ product.name }} | {{ shop.name }}{% endblock %}
 
 {% block content %}
-    <p><a href="{% url 'shop_front' shop.slug %}">← Назад в магазин</a></p>
-    
-    <div style="display: flex; gap: 30px; margin-top: 20px;">
-        <div style="flex: 1;">
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>{{ product.name }}</span>
+</div>
+
+<div style="display: flex; gap: 40px; flex-wrap: wrap;">
+    <!-- Product Image -->
+    <div style="flex: 1; min-width: 300px;">
+        <div class="card" style="padding: 24px; text-align: center;">
             {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; border-radius: 10px;">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%; border-radius: var(--radius-md);">
             {% else %}
-                <div style="width: 100%; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
-                    Нет фото
+                <div style="width: 100%; height: 300px; background: var(--gray-200); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md);">
+                    <span style="font-size: 64px;">📦</span>
                 </div>
             {% endif %}
         </div>
-        
-        <div style="flex: 1;">
-            <h1>{{ product.name }}</h1>
-            <p style="color: #666; margin: 10px 0;">
-                Категория: 
-                {% if product.category %}
-                    <a href="{% url 'category_products' shop.slug product.category.id %}">{{ product.category.name }}</a>
-                {% else %}
-                    Без категории
+    </div>
+    
+    <!-- Product Info -->
+    <div style="flex: 1; min-width: 300px;">
+        <div class="card" style="padding: 32px;">
+            <h1 style="margin-bottom: 16px;">{{ product.name }}</h1>
+            
+            <div style="margin-bottom: 16px;">
+                <span class="badge badge-info">Категория: {{ product.category.name|default:"Без категории" }}</span>
+                {% if product.brand %}
+                    <span class="badge badge-info">Бренд: {{ product.brand.name }}</span>
                 {% endif %}
-            </p>
-            <p style="font-size: 32px; color: #333; font-weight: bold; margin: 20px 0;">
-                {{ product.price }} руб.
-            </p>
-            <p style="margin: 20px 0;">
-                <strong>Наличие:</strong> 
+            </div>
+            
+            <div style="font-size: 36px; font-weight: 700; color: var(--primary); margin-bottom: 16px;">
+                {{ product.price }} ₽
+            </div>
+            
+            <div style="margin-bottom: 24px;">
                 {% if product.stock > 0 %}
-                    <span style="color: green;">В наличии ({{ product.stock }} шт.)</span>
+                    <span class="badge badge-success">В наличии ({{ product.stock }} шт.)</span>
                 {% else %}
-                    <span style="color: red;">Нет в наличии</span>
+                    <span class="badge badge-danger">Нет в наличии</span>
                 {% endif %}
-            </p>
+            </div>
             
             {% if product.stock > 0 %}
-                <form method="post" action="{% url 'add_to_cart' shop.slug product.id %}" style="margin: 20px 0;">
+                <form method="post" action="{% url 'add_to_cart' shop.slug product.id %}" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
                     {% csrf_token %}
-                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 80px; padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                    <button type="submit" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-                        Добавить в корзину
-                    </button>
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" style="width: 100px;">
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 32px;">🛒 Добавить в корзину</button>
                 </form>
-            {% else %}
-                <p style="color: red; margin: 20px 0; padding: 10px; background: #ffe0e0; border-radius: 5px;">
-                    Товара нет в наличии
-                </p>
+                
+                <div style="margin-bottom: 24px;">
+                    {% if user.is_authenticated %}
+                        {% load favorite_check %}
+                        {% if product|is_favorite:user %}
+                            <a href="{% url 'remove_from_favorites' shop.slug product.id %}" class="btn btn-danger">❤️ Удалить из избранного</a>
+                        {% else %}
+                            <a href="{% url 'add_to_favorites' shop.slug product.id %}" class="btn btn-outline">🤍 В избранное</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
             {% endif %}
             
-            <p style="margin: 20px 0; line-height: 1.6;">
-                <strong>Описание:</strong><br>
-                {{ product.description }}
-            </p>
+            <div style="border-top: 1px solid var(--gray-200); padding-top: 24px;">
+                <h3>Описание</h3>
+                <p style="color: var(--gray-700); line-height: 1.6;">{{ product.description }}</p>
+            </div>
             
-            {% if product.brand %}
-                <p><strong>Бренд:</strong> {{ product.brand.name }}</p>
-            {% endif %}
+            <div style="margin-top: 24px;">
+                <a href="{% url 'favorites_list' shop.slug %}" style="color: var(--primary);">📋 Мои избранные товары</a>
+            </div>
         </div>
     </div>
+</div>
 {% endblock %}

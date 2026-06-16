@@ -3,39 +3,47 @@
 {% block title %}Мои магазины{% endblock %}
 
 {% block content %}
-    <h1>Мои магазины</h1>
-    
-    <p>
-        <a href="{% url 'create_shop' %}" class="button">+ Создать новый магазин</a>
-    </p>
-    
-    {% if shops %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Название</th>
-                    <th>URL</th>
-                    <th>Дата создания</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for shop in shops %}
-                    <tr>
-                        <td>{{ shop.name }}</td>
-                        <td>/shop/{{ shop.slug }}/</td>
-                        <td>{{ shop.created_at|date:"d.m.Y" }}</td>
-                        <td>
-                            <a href="{% url 'shop_manage' shop.slug %}">📋 Управлять</a>
-                            <a href="{% url 'shop_front' shop.slug %}" target="_blank">👁️ Смотреть</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>У вас пока нет магазинов. Создайте первый!</p>
-    {% endif %}
-    
-    <p style="margin-top: 20px;"><a href="/">На главную</a></p>
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Мои магазины</span>
+</div>
+
+<h1>Мои магазины</h1>
+
+<div style="margin-bottom: 24px;">
+    <a href="{% url 'create_shop' %}" class="btn btn-primary">+ Создать новый магазин</a>
+    <a href="{% url 'ai_create_shop' %}" class="btn btn-outline" style="margin-left: 12px;">🤖 Создать с ИИ</a>
+</div>
+
+{% if shops %}
+    <div class="products-grid">
+        {% for shop in shops %}
+            <div class="product-card">
+                <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); height: 120px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 48px;">🏪</span>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">{{ shop.name }}</h3>
+                    <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: 12px;">{{ shop.description|truncatewords:15 }}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span class="badge badge-info">Товаров: {{ shop.products.count }}</span>
+                        <span style="font-size: var(--font-size-xs); color: var(--gray-500);">{{ shop.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <a href="{% url 'shop_manage' shop.slug %}" class="btn btn-primary" style="padding: 6px 12px; font-size: var(--font-size-sm);">Управлять</a>
+                        <a href="{% url 'shop_front' shop.slug %}" class="btn btn-outline" style="padding: 6px 12px; font-size: var(--font-size-sm);" target="_blank">Смотреть витрину</a>
+                        <a href="{% url 'shop_dashboard' shop.slug %}" class="btn btn-secondary" style="padding: 6px 12px; font-size: var(--font-size-sm);">Аналитика</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 60px;">
+        <p style="font-size: 18px; color: var(--gray-600); margin-bottom: 16px;">У вас пока нет магазинов</p>
+        <a href="{% url 'create_shop' %}" class="btn btn-primary">Создать первый магазин</a>
+    </div>
+{% endif %}
 {% endblock %}

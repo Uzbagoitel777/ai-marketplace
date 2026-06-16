@@ -3,28 +3,85 @@
 {% block title %}Заказ оформлен - {{ shop.name }}{% endblock %}
 
 {% block content %}
-    <div style="text-align: center; padding: 50px;">
-        <h1 style="color: green;">Спасибо за заказ!</h1>
-        <h2>Номер вашего заказа: #{{ order.id }}</h2>
-        <p>Мы свяжемся с вами по телефону {{ order.phone }} для подтверждения.</p>
-        
-        <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin: 30px auto; max-width: 500px; text-align: left;">
-            <h3>Детали заказа:</h3>
-            <p><strong>ФИО:</strong> {{ order.full_name }}</p>
-            <p><strong>Адрес:</strong> {{ order.address }}</p>
-            <p><strong>Сумма:</strong> {{ order.total_amount }} руб.</p>
-            
-            <h4>Товары:</h4>
-            <ul>
-                {% for item in order.items.all %}
-                    <li>{{ item.product.name }} x {{ item.quantity }} = {{ item.total_price }} руб.</li>
-                {% endfor %}
-            </ul>
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'cart_view' shop.slug %}">Корзина</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Заказ оформлен</span>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="card" style="text-align: center; padding: 48px;">
+        <div style="width: 80px; height: 80px; background: var(--success); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 40px;">
+            ✓
         </div>
         
-        <p>
-            <a href="{% url 'shop_front' shop.slug %}" style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Вернуться в магазин</a>
-            <a href="{% url 'my_orders' shop.slug %}" style="background: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Мои заказы</a>
-        </p>
+        <h1 style="color: var(--success); margin-bottom: 16px;">Спасибо за заказ!</h1>
+        <p style="font-size: 18px; margin-bottom: 24px;">Номер вашего заказа: <strong>#{{ order.id }}</strong></p>
+        <p style="color: var(--gray-600); margin-bottom: 32px;">Мы свяжемся с вами по телефону <strong>{{ order.phone }}</strong> для подтверждения.</p>
+        
+        <div style="background: var(--gray-100); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; text-align: left;">
+            <h3 style="margin-bottom: 16px;">Детали заказа</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+                <div>
+                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Получатель</div>
+                    <div style="font-weight: 500;">{{ order.full_name }}</div>
+                </div>
+                <div>
+                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Телефон</div>
+                    <div style="font-weight: 500;">{{ order.phone }}</div>
+                </div>
+                <div style="grid-column: span 2;">
+                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Адрес доставки</div>
+                    <div style="font-weight: 500;">{{ order.address }}</div>
+                </div>
+            </div>
+            
+            <h4 style="margin-bottom: 12px;">Состав заказа</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th>Кол-во</th>
+                        <th>Цена</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.price }} ₽</td>
+                            <td>{{ item.total_price }} ₽</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="font-weight: 600; border-top: 2px solid var(--gray-300);">
+                        <td colspan="3" style="text-align: right;">Итого:</td>
+                        <td>{{ order.total_amount }} ₽</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'payment_page' shop.slug order.id %}" class="btn btn-primary" style="padding: 12px 32px;">
+                Перейти к оплате
+            </a>
+            <a href="{% url 'customer_orders' shop.slug %}" class="btn btn-secondary" style="padding: 12px 32px;">
+                Мои заказы
+            </a>
+            <a href="{% url 'shop_front' shop.slug %}" class="btn btn-outline" style="padding: 12px 32px;">
+                Вернуться в магазин
+            </a>
+        </div>
     </div>
+</div>
 {% endblock %}

@@ -4,148 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AI Shop Platform{% endblock %}</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-        }
-        nav {
-            background: #333;
-            color: white;
-            padding: 15px 20px;
-            overflow: hidden;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-right: 20px;
-        }
-        nav a:hover {
-            text-decoration: underline;
-        }
-        nav .right {
-            float: right;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-            min-height: 500px;
-        }
-        .alert {
-            padding: 10px;
-            background: #4CAF50;
-            color: white;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .alert-error {
-            background: #f44336;
-        }
-        .alert-success {
-            background: #4CAF50;
-        }
-        .alert-warning {
-            background: #ff9800;
-        }
-        .alert-info {
-            background: #2196F3;
-        }
-        button, .button {
-            display: inline-block;
-            background: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover, .button:hover {
-            background: #45a049;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background: #f2f2f2;
-        }
-        input[type="text"],
-        input[type="password"],
-        input[type="email"],
-        input[type="number"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        form div {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        hr {
-            margin: 20px 0;
-            border: none;
-            border-top: 1px solid #ddd;
-        }
-        footer {
-            background: #333;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin-top: 50px;
-        }
-        .shop-card {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .shop-card h3 {
-            margin-bottom: 10px;
-        }
-        .shop-card p {
-            color: #666;
-            margin-bottom: 10px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/amazon-style.css">
 </head>
 <body>
-    <nav>
-        <a href="/">Главная</a>
-        <a href="{% url 'my_shops' %}">Мои магазины</a>
-        <a href="/admin/">Админка</a>
-        {% if user.is_authenticated %}
-            <span class="right">Привет, {{ user.username }} | <a href="/admin/logout/">Выйти</a></span>
-        {% else %}
-            <span class="right"><a href="/admin/login/">Войти</a></span>
-        {% endif %}
-    </nav>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top">
+            <div class="logo">
+                <a href="/">AI Shop Platform</a>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: var(--spacing-lg);">
+                {% if user.is_authenticated %}
+                    <div class="user-menu">
+                        <div class="user-menu-trigger">
+                            {{ user.username }}
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="user-dropdown">
+                            {% if is_customer %}
+                                <a href="{% url 'customer_profile' 'shop-1-1780731851' %}">Мой профиль</a>
+                                <a href="{% url 'customer_orders' 'shop-1-1780731851' %}">Мои заказы</a>
+                                <a href="{% url 'favorites_list' 'shop-1-1780731851' %}">Избранное</a>
+                                <a href="{% url 'cart_view' 'shop-1-1780731851' %}">Корзина</a>
+                            {% endif %}
+                            {% if is_seller %}
+                                <a href="{% url 'my_shops' %}">Мои магазины</a>
+                                <a href="{% url 'ai_create_shop' %}">Создать магазин с ИИ</a>
+                            {% endif %}
+                            {% if is_super_admin %}
+                                <a href="{% url 'admin_dashboard' %}">Панель управления</a>
+                            {% endif %}
+                            <a href="/admin/">Админка Django</a>
+                            <a href="/admin/logout/" style="color: var(--danger);">Выйти</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="/admin/login/" class="btn btn-outline" style="padding: var(--spacing-xs) var(--spacing-md);">Войти</a>
+                    <a href="/admin/auth/user/add/" class="btn btn-primary" style="padding: var(--spacing-xs) var(--spacing-md);">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <nav class="nav">
+            <div class="nav-links">
+                <a href="/">Главная</a>
+                {% if is_seller or is_super_admin %}
+                    <a href="/shops/my/">Мои магазины</a>
+                    <a href="{% url 'ai_create_shop' %}">Создать с ИИ</a>
+                {% endif %}
+                {% if is_customer or is_super_admin %}
+                    <a href="{% url 'cart_view' 'shop-1-1780731851' %}">Корзина</a>
+                    <a href="{% url 'favorites_list' 'shop-1-1780731851' %}">Избранное</a>
+                {% endif %}
+                {% if is_super_admin %}
+                    <a href="{% url 'admin_dashboard' %}">Панель управления</a>
+                {% endif %}
+                <a href="/admin/">Админка Django</a>
+            </div>
+        </nav>
+    </header>
     
-    <div class="container">
+    <main class="container">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
+                <div class="alert alert-{% if message.tags == 'error' %}error{% else %}{{ message.tags }}{% endif %}">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -153,10 +79,15 @@
         
         {% block content %}
         {% endblock %}
-    </div>
+    </main>
     
-    <footer>
-        <p>AI Shop Platform — создай магазин с помощью ИИ</p>
+    <footer class="footer">
+        <div class="footer-content">
+            <p>AI Shop Platform — создайте интернет-магазин с помощью искусственного интеллекта</p>
+            <p style="font-size: var(--font-size-xs); margin-top: var(--spacing-md);">
+                © 2024 AI Shop Platform. Все права защищены.
+            </p>
+        </div>
     </footer>
 </body>
 </html>

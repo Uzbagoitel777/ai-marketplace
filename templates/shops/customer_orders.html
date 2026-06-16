@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои заказы - {{ shop.name }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'customer_profile' shop.slug %}">Личный кабинет</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Мои заказы</span>
+</div>
+
+<h1>Мои заказы</h1>
+
+<div style="display: flex; gap: 32px; flex-wrap: wrap;">
+    <!-- Sidebar -->
+    <aside style="width: 280px; flex-shrink: 0;">
+        <div class="card">
+            <div class="card-body">
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 12px;">
+                        <a href="{% url 'customer_profile' shop.slug %}">📋 Профиль</a>
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <a href="{% url 'customer_orders' shop.slug %}" style="font-weight: 600; color: var(--primary);">📦 Мои заказы</a>
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <a href="{% url 'favorites_list' shop.slug %}">❤️ Избранное</a>
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <a href="{% url 'cart_view' shop.slug %}">🛒 Корзина</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Orders List -->
+    <main style="flex: 1;">
+        {% if orders %}
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                {% for order in orders %}
+                    <div class="card">
+                        <div class="card-body">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 16px;">
+                                <div>
+                                    <h3 style="margin-bottom: 4px;">Заказ #{{ order.id }}</h3>
+                                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">
+                                        {{ order.created_at|date:"d.m.Y H:i" }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="badge 
+                                        {% if order.status == 'new' %}badge-warning
+                                        {% elif order.status == 'processing' %}badge-info
+                                        {% elif order.status == 'shipped' %}badge-info
+                                        {% elif order.status == 'delivered' %}badge-success
+                                        {% elif order.status == 'cancelled' %}badge-danger
+                                        {% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
+                                <div>
+                                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Сумма</div>
+                                    <div style="font-size: var(--font-size-lg); font-weight: 600; color: var(--primary);">{{ order.total_amount }} ₽</div>
+                                </div>
+                                <div>
+                                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Товаров</div>
+                                    <div style="font-weight: 500;">{{ order.items.count }} шт.</div>
+                                </div>
+                                <div>
+                                    <div style="color: var(--gray-500); font-size: var(--font-size-sm);">Способ оплаты</div>
+                                    <div style="font-weight: 500;">
+                                        {% if order.payment %}
+                                            {{ order.payment.get_payment_method_display|default:order.payment.payment_method|default:"Не оплачен" }}
+                                        {% else %}
+                                            Не оплачен
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <details style="margin-bottom: 16px;">
+                                <summary style="cursor: pointer; color: var(--primary); font-size: var(--font-size-sm); margin-bottom: 8px;">
+                                    Состав заказа
+                                </summary>
+                                <div style="margin-top: 12px;">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Товар</th>
+                                                <th>Кол-во</th>
+                                                <th>Цена</th>
+                                                <th>Сумма</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in order.items.all %}
+                                                <tr>
+                                                    <td>{{ item.product.name }}</td>
+                                                    <td>{{ item.quantity }}</td>
+                                                    <td>{{ item.price }} ₽</td>
+                                                    <td>{{ item.total_price }} ₽</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </details>
+                            
+                            <div style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                                <div style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: 12px;">
+                                    📍 {{ order.address }}
+                                </div>
+                                <a href="{% url 'customer_order_detail' shop.slug order.id %}" class="btn btn-outline" style="font-size: var(--font-size-sm);">
+                                    Подробнее о заказе
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card" style="text-align: center; padding: 60px;">
+                <p style="font-size: 18px; color: var(--gray-600); margin-bottom: 16px;">У вас пока нет заказов</p>
+                <a href="{% url 'shop_front' shop.slug %}" class="btn btn-primary">Начать покупки</a>
+            </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

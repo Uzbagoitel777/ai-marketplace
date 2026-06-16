@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Пользователь {{ user.username }}{% endblock %}
+
+{% block content %}
+<h1>Пользователь: {{ user.username }}</h1>
+
+<div style="display: flex; gap: 20px;">
+    <div style="flex: 1;">
+        <h2>Информация</h2>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y H:i" }}</p>
+        <p><strong>Последний вход:</strong> {{ user.last_login|date:"d.m.Y H:i" }}</p>
+    </div>
+    <div style="flex: 1;">
+        <h2>Магазины ({{ shops|length }})</h2>
+        <ul>
+            {% for shop in shops %}
+                <li>{{ shop.name }} — <a href="/admin/shops/shop/{{ shop.id }}/change/">Редактировать</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<h2>Заказы ({{ orders|length }})</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Магазин</th>
+            <th>Сумма</th>
+            <th>Статус</th>
+            <th>Дата</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+            <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.shop.name }}</td>
+                <td>{{ order.total_amount }} ₽</td>
+                <td>{{ order.get_status_display }}</td>
+                <td>{{ order.created_at|date:"d.m.Y" }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p><a href="{% url 'admin_users' %}">← Назад к пользователям</a></p>
+{% endblock %}

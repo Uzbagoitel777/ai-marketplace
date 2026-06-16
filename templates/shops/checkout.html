@@ -1,55 +1,94 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block title %}Оформление заказа - {{ shop.name }}{% endblock %}
 
 {% block content %}
-    <h1>Оформление заказа</h1>
-    
-    <div style="display: flex; gap: 30px;">
-        <div style="flex: 1;">
-            <h2>Ваши данные</h2>
-            <form method="post">
-                {% csrf_token %}
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">ФИО *</label>
-                    <input type="text" name="full_name" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">Телефон *</label>
-                    <input type="tel" name="phone" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">Адрес доставки *</label>
-                    <textarea name="address" rows="3" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">Комментарий</label>
-                    <textarea name="comment" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
-                </div>
-                
-                <button type="submit" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">Подтвердить заказ</button>
-                <a href="{% url 'cart_view' shop.slug %}" style="margin-left: 10px;">Вернуться в корзину</a>
-            </form>
-        </div>
-        
-        <div style="width: 350px; background: #f5f5f5; padding: 20px; border-radius: 10px;">
-            <h2>Ваш заказ</h2>
-            <table style="width: 100%;">
-                {% for item in cart.items.all %}
-                    <tr>
-                        <td>{{ item.product.name }} x {{ item.quantity }}</td>
-                        <td style="text-align: right;">{{ item.total_price }} руб.</td>
-                    </tr>
-                {% endfor %}
-                <tr style="border-top: 1px solid #ddd; font-weight: bold;">
-                    <td style="padding-top: 10px;">Итого:</td>
-                    <td style="text-align: right; padding-top: 10px;">{{ cart.total_price }} руб.</td>
-                </tr>
-            </table>
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'cart_view' shop.slug %}">Корзина</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Оформление заказа</span>
+</div>
+
+<h1>Оформление заказа</h1>
+
+<div style="display: flex; gap: 32px; flex-wrap: wrap;">
+    <!-- Форма заказа -->
+    <div style="flex: 2;">
+        <div class="card">
+            <div class="card-body">
+                <h3>Контактные данные</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">ФИО *</label>
+                        <input type="text" name="full_name" required class="form-control" placeholder="Иванов Иван Иванович">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Телефон *</label>
+                        <input type="tel" name="phone" required class="form-control" placeholder="+7 XXX XXX-XX-XX">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Адрес доставки *</label>
+                        <textarea name="address" rows="3" required class="form-control" placeholder="Город, улица, дом, квартира"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Комментарий к заказу</label>
+                        <textarea name="comment" rows="2" class="form-control" placeholder="Пожелания по доставке..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Подтвердить заказ</button>
+                </form>
+            </div>
         </div>
     </div>
+    
+    <!-- Информация о заказе -->
+    <div style="flex: 1;">
+        <div class="card">
+            <div class="card-body">
+                <h3>Ваш заказ</h3>
+                
+                <div style="margin-bottom: 16px;">
+                    {% for item in cart.items.all %}
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                            <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                            <span style="font-weight: 500;">{{ item.total_price }} ₽</span>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <hr style="margin: 16px 0;">
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: 600;">
+                    <span>Итого</span>
+                    <span style="font-size: 20px; color: var(--primary);">{{ cart.total_price }} ₽</span>
+                </div>
+                
+                <div style="background: var(--gray-100); padding: 12px; border-radius: var(--radius-md); margin-top: 16px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <span>🚚</span>
+                        <span style="font-size: var(--font-size-sm);">Доставка по городу — бесплатно</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <span>💳</span>
+                        <span style="font-size: var(--font-size-sm);">Оплата при получении или онлайн</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'cart_view' shop.slug %}" class="btn btn-secondary" style="width: 100%; margin-top: 16px;">Вернуться в корзину</a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Ошибка оплаты - {{ shop.name }}{% endblock %}
+
+{% block content %}
+    <div style="text-align: center; padding: 60px 20px;">
+        <div style="font-size: 80px; margin-bottom: 20px;">❌</div>
+        <h1 style="color: red;">Ошибка оплаты</h1>
+        <p>К сожалению, произошла ошибка при обработке платежа.</p>
+        
+        <div style="background: #f5f5f5; padding: 25px; border-radius: 10px; max-width: 500px; margin: 30px auto;">
+            <p><strong>Заказ #{{ order.id }}</strong></p>
+            <p>Сумма: {{ order.total_amount }} руб.</p>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <a href="{% url 'payment_page' shop.slug order.id %}" style="background: #FF9800; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+                Попробовать снова
+            </a>
+            <a href="{% url 'shop_front' shop.slug %}" style="background: #666; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+                Вернуться в магазин
+            </a>
+        </div>
+    </div>
+{% endblock %}

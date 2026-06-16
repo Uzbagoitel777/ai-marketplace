@@ -3,50 +3,67 @@
 {% block title %}Корзина - {{ shop.name }}{% endblock %}
 
 {% block content %}
-    <h1>Корзина</h1>
-    
-    {% if cart.items.all %}
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background: #f2f2f2;">
-                    <th style="padding: 10px; text-align: left;">Товар</th>
-                    <th style="padding: 10px; text-align: left;">Цена</th>
-                    <th style="padding: 10px; text-align: left;">Количество</th>
-                    <th style="padding: 10px; text-align: left;">Сумма</th>
-                    <th style="padding: 10px; text-align: left;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in cart.items.all %}
-                    <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 10px;">{{ item.product.name }}</td>
-                        <td style="padding: 10px;">{{ item.product.price }} руб.</td>
-                        <td style="padding: 10px;">
-                            <form method="post" action="{% url 'update_cart_item' shop.slug item.id %}" style="display: flex; gap: 5px;">
-                                {% csrf_token %}
-                                <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}" style="width: 60px; padding: 5px;">
-                                <button type="submit" style="background: #2196F3; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Обновить</button>
-                            </form>
-                        </td>
-                        <td style="padding: 10px;">{{ item.total_price }} руб.</td>
-                        <td style="padding: 10px;">
-                            <a href="{% url 'remove_from_cart' shop.slug item.id %}" onclick="return confirm('Удалить товар?')" style="color: red;">Удалить</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-                <tr style="background: #f2f2f2; font-weight: bold;">
-                    <td colspan="3" style="padding: 10px; text-align: right;">Итого:</td>
-                    <td colspan="2" style="padding: 10px;">{{ cart.total_price }} руб.</td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <div style="margin-top: 20px;">
-            <a href="{% url 'shop_front' shop.slug %}" style="background: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Продолжить покупки</a>
-            <a href="{% url 'checkout' shop.slug %}" style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-left: 10px;">Оформить заказ</a>
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Корзина</span>
+</div>
+
+<h1>Корзина</h1>
+
+{% if cart.items.all %}
+    <div style="display: flex; gap: 32px; flex-wrap: wrap;">
+        <div style="flex: 2;">
+            {% for item in cart.items.all %}
+                <div class="cart-item">
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
+                    {% else %}
+                        <div class="cart-item-image" style="display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 32px;">📦</span>
+                        </div>
+                    {% endif %}
+                    <div class="cart-item-info">
+                        <div class="cart-item-title">{{ item.product.name }}</div>
+                        <div class="cart-item-price">{{ item.product.price }} ₽</div>
+                    </div>
+                    <form method="post" action="{% url 'update_cart_item' shop.slug item.id %}" style="display: flex; align-items: center; gap: 8px;">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}" class="cart-item-quantity">
+                        <button type="submit" class="btn btn-secondary" style="padding: 6px 12px;">Обновить</button>
+                    </form>
+                    <div style="font-weight: 600; min-width: 80px; text-align: right;">
+                        {{ item.total_price }} ₽
+                    </div>
+                    <a href="{% url 'remove_from_cart' shop.slug item.id %}" class="btn btn-danger" style="padding: 6px 12px;" onclick="return confirm('Удалить товар?')">Удалить</a>
+                </div>
+            {% endfor %}
         </div>
-    {% else %}
-        <p>Корзина пуста</p>
-        <p><a href="{% url 'shop_front' shop.slug %}">Вернуться к покупкам</a></p>
-    {% endif %}
+        
+        <div style="flex: 1;">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Итого</h3>
+                    <div style="margin: 16px 0;">
+                        <span style="font-size: 28px; font-weight: 700; color: var(--primary);">{{ cart.total_price }} ₽</span>
+                    </div>
+                    <div style="margin-bottom: 16px; color: var(--gray-600);">
+                        Товаров: {{ cart.total_items }} шт.
+                    </div>
+                    <hr style="margin: 16px 0;">
+                    <a href="{% url 'shop_front' shop.slug %}" class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;">Продолжить покупки</a>
+                    <a href="{% url 'checkout' shop.slug %}" class="btn btn-primary" style="width: 100%;">Оформить заказ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 60px;">
+        <p style="font-size: 18px; color: var(--gray-600); margin-bottom: 16px;">Корзина пуста</p>
+        <a href="{% url 'shop_front' shop.slug %}" class="btn btn-primary">Вернуться к покупкам</a>
+    </div>
+{% endif %}
 {% endblock %}

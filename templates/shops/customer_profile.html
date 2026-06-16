@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет - {{ shop.name }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Личный кабинет</span>
+</div>
+
+<h1>Личный кабинет</h1>
+
+<div style="display: flex; gap: 32px; flex-wrap: wrap;">
+    <!-- Sidebar -->
+    <aside style="width: 280px; flex-shrink: 0;">
+        <div class="card">
+            <div class="card-body">
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 12px;">
+                        <a href="{% url 'customer_profile' shop.slug %}" style="font-weight: 600; color: var(--primary);">📋 Профиль</a>
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <a href="{% url 'customer_orders' shop.slug %}">📦 Мои заказы</a>
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <a href="{% url 'favorites_list' shop.slug %}">❤️ Избранное ({{ favorites.count }})</a>
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <a href="{% url 'cart_view' shop.slug %}">🛒 Корзина</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main style="flex: 1;">
+        <div class="card">
+            <div class="card-body">
+                <h3>Мой профиль</h3>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label class="form-label">Имя пользователя</label>
+                        <input type="text" value="{{ user.username }}" disabled class="form-control" style="background: var(--gray-100);">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" value="{{ user.email }}" disabled class="form-control" style="background: var(--gray-100);">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Телефон</label>
+                        <input type="tel" name="phone" value="{{ profile.phone|default:'' }}" placeholder="+7 XXX XXX-XX-XX" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Адрес доставки</label>
+                        <textarea name="address" rows="3" placeholder="Город, улица, дом, квартира" class="form-control">{{ profile.address|default:'' }}</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Recent Orders -->
+        <div class="card" style="margin-top: 24px;">
+            <div class="card-body">
+                <h3>Последние заказы</h3>
+                
+                {% if orders %}
+                    {% for order in orders|slice:":3" %}
+                        <div style="border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <strong>Заказ #{{ order.id }}</strong>
+                                <span style="color: var(--gray-600);">{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div style="margin-bottom: 8px;">Сумма: <strong>{{ order.total_amount }} ₽</strong></div>
+                            <div style="margin-bottom: 8px;">
+                                Статус: <span class="badge 
+                                    {% if order.status == 'new' %}badge-warning
+                                    {% elif order.status == 'delivered' %}badge-success
+                                    {% elif order.status == 'cancelled' %}badge-danger
+                                    {% else %}badge-info{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </div>
+                            <a href="{% url 'customer_order_detail' shop.slug order.id %}" class="btn btn-outline" style="margin-top: 8px;">Подробнее</a>
+                        </div>
+                    {% endfor %}
+                    
+                    {% if orders|length > 3 %}
+                        <div style="text-align: center; margin-top: 16px;">
+                            <a href="{% url 'customer_orders' shop.slug %}" class="btn btn-secondary">Все заказы ({{ orders|length }})</a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p style="color: var(--gray-600);">У вас пока нет заказов</p>
+                    <a href="{% url 'shop_front' shop.slug %}" class="btn btn-primary" style="margin-top: 12px;">Начать покупки</a>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

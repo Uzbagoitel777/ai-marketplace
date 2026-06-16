@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Избранное - {{ shop.name }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'customer_profile' shop.slug %}">Личный кабинет</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Избранное</span>
+</div>
+
+<h1>Избранные товары</h1>
+
+{% if favorites %}
+    <div class="products-grid">
+        {% for favorite in favorites %}
+            <div class="product-card">
+                {% if favorite.product.image %}
+                    <img src="{{ favorite.product.image.url }}" alt="{{ favorite.product.name }}" class="product-image">
+                {% else %}
+                    <div class="product-image" style="display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 48px;">📦</span>
+                    </div>
+                {% endif %}
+                <div class="product-info">
+                    <h3 class="product-title">
+                        <a href="{% url 'product_detail' shop.slug favorite.product.id %}">{{ favorite.product.name }}</a>
+                    </h3>
+                    <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: 12px;">
+                        {{ favorite.product.description|truncatewords:15 }}
+                    </p>
+                    <div class="product-price">{{ favorite.product.price }} ₽</div>
+                    <div class="product-meta">
+                        <span class="badge badge-success">В наличии: {{ favorite.product.stock }}</span>
+                        <a href="{% url 'remove_from_favorites' shop.slug favorite.product.id %}" class="btn btn-danger" style="padding: 6px 12px;" onclick="return confirm('Удалить из избранного?')">
+                            Удалить
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 60px;">
+        <p style="font-size: 18px; color: var(--gray-600); margin-bottom: 16px;">У вас пока нет избранных товаров</p>
+        <a href="{% url 'shop_front' shop.slug %}" class="btn btn-primary">Вернуться к покупкам</a>
+    </div>
+{% endif %}
+{% endblock %}

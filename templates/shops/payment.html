@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Оплата заказа - {{ shop.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'cart_view' shop.slug %}">Корзина</a>
+    <span class="breadcrumbs-separator">›</span>
+    <a href="{% url 'checkout' shop.slug %}">Оформление</a>
+    <span class="breadcrumbs-separator">›</span>
+    <span>Оплата</span>
+</div>
+
+<h1>Оплата заказа #{{ order.id }}</h1>
+
+<div style="display: flex; gap: 32px; flex-wrap: wrap;">
+    <div style="flex: 1;">
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="card-body">
+                <h3>Информация о заказе</h3>
+                <div style="margin-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <span style="color: var(--gray-600);">Сумма к оплате:</span>
+                        <span style="font-size: 24px; font-weight: 700; color: var(--primary);">{{ order.total_amount }} ₽</span>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <span style="color: var(--gray-600);">Получатель:</span> {{ order.full_name }}
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <span style="color: var(--gray-600);">Адрес:</span> {{ order.address }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h3>Состав заказа</h3>
+                <ul style="list-style: none; padding: 0; margin-top: 16px;">
+                    {% for item in order.items.all %}
+                        <li style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                            <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                            <span style="font-weight: 500;">{{ item.total_price }} ₽</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div style="flex: 1;">
+        <div class="card">
+            <div class="card-body">
+                <h3>Способ оплаты</h3>
+                
+                <form method="post" action="{% url 'process_payment' shop.slug order.id %}">
+                    {% csrf_token %}
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;">
+                            <input type="radio" name="payment_method" value="card" checked style="width: 18px; height: 18px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 4px;">Банковская карта</div>
+                                <div style="font-size: var(--font-size-sm); color: var(--gray-500);">Visa, Mastercard, МИР</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;">
+                            <input type="radio" name="payment_method" value="sbp" style="width: 18px; height: 18px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 4px;">Система быстрых платежей</div>
+                                <div style="font-size: var(--font-size-sm); color: var(--gray-500);">Оплата по номеру телефона</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;">
+                            <input type="radio" name="payment_method" value="cash" style="width: 18px; height: 18px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 4px;">Наличные при получении</div>
+                                <div style="font-size: var(--font-size-sm); color: var(--gray-500);">Оплата курьеру</div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div style="background: var(--primary-light); padding: 16px; border-radius: var(--radius-md); margin-bottom: 24px;">
+                        <div style="display: flex; gap: 8px;">
+                            <span>🔒</span>
+                            <span style="font-size: var(--font-size-sm);">Безопасное соединение</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">
+                        Оплатить {{ order.total_amount }} ₽
+                    </button>
+                    
+                    <a href="{% url 'order_confirmation' shop.slug order.id %}" class="btn btn-secondary" style="width: 100%; margin-top: 12px;">
+                        Назад
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
