@@ -1,0 +1,32 @@
+<div class="product-card" data-url="{% url 'product_detail' shop.slug product.id %}" onclick="window.location=this.dataset.url" style="cursor:pointer; position:relative; overflow:hidden;">
+    {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+    {% elif product.image_url %}
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+    {% else %}
+        <div class="product-image" style="background: linear-gradient(135deg, var(--primary-light), var(--gray-200)); display: flex; align-items: center; justify-content: center;"><span style="font-size: 48px;">📦</span></div>
+    {% endif %}
+    <div class="product-info">
+        <h3 class="product-title">{{ product.name }}</h3>
+        <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: 12px;">{{ product.description|truncatewords:15 }}</p>
+        <div class="product-price">{{ product.price }} ₽</div>
+        <div style="font-size: var(--font-size-sm); color: var(--gray-600); margin: 8px 0 14px;">🚚 Доставка примерно 1–3 дня по городу, 3–7 дней в другой регион</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;" onclick="event.stopPropagation();">
+            {% if user.is_authenticated and user.id == shop.owner_id %}
+                <span class="badge badge-info">Ваш товар</span>
+            {% elif product.stock > 0 %}
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_to_cart' shop.slug product.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn-primary" style="padding: 7px 14px;">Добавить в корзину</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'shop_customer_login' shop.slug %}" class="btn btn-primary" style="padding: 7px 14px;">Войти и купить</a>
+                {% endif %}
+            {% else %}
+                <span class="badge badge-danger">Нет в наличии</span>
+            {% endif %}
+        </div>
+    </div>
+</div>

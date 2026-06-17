@@ -1,14 +1,9 @@
-{% extends 'base.html' %}
-
-{% load static %}
+{% extends 'shops/shop_base.html' %}
 
 {% block title %}Оформление заказа - {{ shop.name }}{% endblock %}
 
 {% block content %}
-<!-- Breadcrumbs -->
 <div class="breadcrumbs">
-    <a href="/">Главная</a>
-    <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'cart_view' shop.slug %}">Корзина</a>
@@ -18,47 +13,70 @@
 
 <h1>Оформление заказа</h1>
 
+<div class="card" style="margin-bottom: 20px; border-left: 4px solid var(--primary);">
+    <div class="card-body">
+        <strong>Адрес магазина:</strong> {{ shop.city }}{% if shop.address %}, {{ shop.address }}{% endif %}
+        <div style="color: var(--gray-600); margin-top: 6px;">Сначала выберите способ получения. Поля доставки появятся только при выборе доставки.</div>
+    </div>
+</div>
+
 <div style="display: flex; gap: 32px; flex-wrap: wrap;">
-    <!-- Форма заказа -->
     <div style="flex: 2;">
         <div class="card">
             <div class="card-body">
-                <h3>Контактные данные</h3>
-                <form method="post">
+                <form method="post" id="checkout-form">
                     {% csrf_token %}
-                    
+
+                    <h3>Способ получения</h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:20px;">
+                        <label style="border:1px solid var(--gray-300); border-radius:14px; padding:14px; cursor:pointer;"><input type="radio" name="delivery_type" value="pickup" checked> Самовывоз из магазина</label>
+                        {% if shop.delivery_enabled %}<label style="border:1px solid var(--gray-300); border-radius:14px; padding:14px; cursor:pointer;"><input type="radio" name="delivery_type" value="delivery"> Доставка</label>{% endif %}
+                    </div>
+
+                    <h3>Контактные данные</h3>
                     <div class="form-group">
                         <label class="form-label">ФИО *</label>
                         <input type="text" name="full_name" required class="form-control" placeholder="Иванов Иван Иванович">
                     </div>
-                    
                     <div class="form-group">
                         <label class="form-label">Телефон *</label>
                         <input type="tel" name="phone" required class="form-control" placeholder="+7 XXX XXX-XX-XX">
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Адрес доставки *</label>
-                        <textarea name="address" rows="3" required class="form-control" placeholder="Город, улица, дом, квартира"></textarea>
+
+                    <div id="delivery-fields" style="display:none; border-top:1px solid var(--gray-200); padding-top:18px; margin-top:18px;">
+                        <h3>Данные доставки</h3>
+                        <div class="form-group">
+                            <label class="form-label">Город доставки *</label>
+                            <input type="text" name="customer_city" id="customer-city" class="form-control" placeholder="Например: Екатеринбург">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Адрес доставки *</label>
+                            <textarea name="address" id="delivery-address" rows="3" class="form-control" placeholder="Город, улица, дом, квартира"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Служба доставки</label>
+                            <select name="delivery_service" class="form-control">
+                                {% for option in delivery_options %}
+                                    {% if option.code != 'pickup' %}<option value="{{ option.code }}">{{ option.name }} — примерно {{ option.price }} ₽</option>{% endif %}
+                                {% endfor %}
+                            </select>
+                            <div style="font-size: var(--font-size-sm); color: var(--gray-500); margin-top: 6px;">Цена примерная: учитывается город магазина, город клиента и служба доставки.</div>
+                        </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">Комментарий к заказу</label>
-                        <textarea name="comment" rows="2" class="form-control" placeholder="Пожелания по доставке..."></textarea>
+                        <textarea name="comment" rows="2" class="form-control" placeholder="Пожелания по доставке или самовывозу..."></textarea>
                     </div>
-                    
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Подтвердить заказ</button>
                 </form>
             </div>
         </div>
     </div>
-    
-    <!-- Информация о заказе -->
     <div style="flex: 1;">
         <div class="card">
             <div class="card-body">
                 <h3>Ваш заказ</h3>
-                
                 <div style="margin-bottom: 16px;">
                     {% for item in cart.items.all %}
                         <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
@@ -67,28 +85,34 @@
                         </div>
                     {% endfor %}
                 </div>
-                
                 <hr style="margin: 16px 0;">
-                
+                <div style="margin-bottom: 8px;"><strong>Самовывоз:</strong> 0 ₽</div>
+                {% if shop.delivery_enabled %}<div style="margin-bottom: 8px;"><strong>Доставка:</strong> рассчитывается после выбора службы</div>{% endif %}
                 <div style="display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: 600;">
-                    <span>Итого</span>
+                    <span>Товары</span>
                     <span style="font-size: 20px; color: var(--primary);">{{ cart.total_price }} ₽</span>
                 </div>
-                
                 <div style="background: var(--gray-100); padding: 12px; border-radius: var(--radius-md); margin-top: 16px;">
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <span>🚚</span>
-                        <span style="font-size: var(--font-size-sm);">Доставка по городу — бесплатно</span>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <span>💳</span>
-                        <span style="font-size: var(--font-size-sm);">Оплата при получении или онлайн</span>
-                    </div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;"><span>🚚</span><span style="font-size: var(--font-size-sm);">{% if shop.delivery_enabled %}{{ shop.delivery_description }}{% else %}Доступен только самовывоз{% endif %}</span></div>
+                    <div style="display: flex; gap: 8px;"><span>💳</span><span style="font-size: var(--font-size-sm);">{% if shop.payment_enabled %}{{ shop.payment_methods }}{% else %}Онлайн-оплата временно недоступна{% endif %}</span></div>
                 </div>
-                
                 <a href="{% url 'cart_view' shop.slug %}" class="btn btn-secondary" style="width: 100%; margin-top: 16px;">Вернуться в корзину</a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    const deliveryFields = document.getElementById('delivery-fields');
+    const customerCity = document.getElementById('customer-city');
+    const deliveryAddress = document.getElementById('delivery-address');
+    function toggleDeliveryFields() {
+        const deliverySelected = document.querySelector('input[name="delivery_type"]:checked')?.value === 'delivery';
+        deliveryFields.style.display = deliverySelected ? 'block' : 'none';
+        customerCity.required = deliverySelected;
+        deliveryAddress.required = deliverySelected;
+    }
+    document.querySelectorAll('input[name="delivery_type"]').forEach((item) => item.addEventListener('change', toggleDeliveryFields));
+    toggleDeliveryFields();
+</script>
 {% endblock %}

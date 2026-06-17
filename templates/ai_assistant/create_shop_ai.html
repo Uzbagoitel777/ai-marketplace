@@ -1,40 +1,29 @@
 {% extends 'base.html' %}
-
 {% block title %}Создать магазин с ИИ{% endblock %}
+{% block platform_header %}{% endblock %}
+{% block platform_footer %}{% endblock %}
 
 {% block content %}
-<div class="breadcrumbs">
-    <a href="/">Главная</a>
-    <span class="breadcrumbs-separator">›</span>
-    <a href="{% url 'my_shops' %}">Мои магазины</a>
-    <span class="breadcrumbs-separator">›</span>
-    <span>Создать с ИИ</span>
-</div>
-
-<div style="max-width: 600px; margin: 0 auto;">
-    <div class="card">
-        <div class="card-body">
-            <h1>Создать магазин с помощью ИИ</h1>
-            <p style="color: var(--gray-600); margin-bottom: 24px;">Расскажите, какой магазин вы хотите создать, и искусственный интеллект поможет вам!</p>
-            
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label class="form-label">Название магазина</label>
-                    <input type="text" name="shop_name" required class="form-control" placeholder="Например: TechStore, FashionShop">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Что вы продаете? (необязательно)</label>
-                    <textarea name="shop_description" rows="3" class="form-control" placeholder="Например: электроника, смартфоны, ноутбуки..."></textarea>
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
-                    Сгенерировать магазин с ИИ
-                </button>
-            </form>
+<div class="seller-shell">
+    {% include 'shops/_seller_topbar.html' %}
+    <div class="seller-page">
+        <div style="max-width: 880px; margin: 0 auto;">
+            <div class="seller-card"><div class="seller-card-body">
+                <h1 style="margin:0 0 8px;">Создать магазин с помощью ИИ</h1>
+                <p class="seller-muted">Опишите нишу, выберите цвет и количество готовых карточек. После генерации откроется предпросмотр: можно принять сайт или попросить ИИ переделать дизайн.</p>
+                <form method="post" id="ai-create-form" style="display:grid; gap:16px; margin-top:20px;">
+                    {% csrf_token %}
+                    <div><label class="form-label">Название магазина</label><input type="text" name="shop_name" required class="form-control" placeholder="Например: SportFuel"></div>
+                    <div><label class="form-label">Что продаем?</label><textarea name="shop_description" rows="3" class="form-control" placeholder="Например: спортивное питание, протеин, витамины, батончики"></textarea></div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:14px;"><div><label class="form-label">Город магазина *</label><input type="text" name="city" required class="form-control" placeholder="Екатеринбург"></div><div><label class="form-label">Адрес магазина *</label><input type="text" name="address" required class="form-control" placeholder="Улица, дом, пункт самовывоза"></div></div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:14px;"><div><label class="form-label">Базовый шаблон</label><select name="template_key" class="form-control"><option value="modern">Modern — универсальный</option><option value="minimal">Minimal — чистый каталог</option><option value="premium">Premium — дорогой стиль</option></select></div><div><label class="form-label">Цвет-фаворит</label><input type="color" name="favorite_color" value="#a855f7" class="form-control" style="height:48px;"></div><div><label class="form-label">Готовых карточек</label><select name="product_count" class="form-control"><option value="6">6 — быстрое демо</option><option value="12" selected>12 — нормальный старт</option><option value="24">24 — расширенный каталог</option><option value="50">50 — бизнес-витрина</option></select></div></div>
+                    <div><label class="form-label">Кастомные параметры дизайна</label><textarea name="design_notes" rows="3" class="form-control" placeholder="Например: карточки как на маркетплейсе, яркие ценники, фиолетовые кнопки, современный спорт-стиль"></textarea></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:14px;">Сгенерировать предпросмотр</button>
+                </form>
+            </div></div>
         </div>
     </div>
 </div>
+<div id="generation-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.72); z-index:3000; align-items:center; justify-content:center; padding:20px;"><div style="background:white; width:min(560px,100%); border-radius:28px; padding:30px; box-shadow:0 30px 90px rgba(0,0,0,.28);"><div class="seller-pill" style="margin-bottom:12px;">Генерация ИИ</div><h2 style="margin-bottom:8px;">Генерируем предпросмотр</h2><p id="generation-step" class="seller-muted">Готовим структуру магазина...</p><div style="height:16px;background:#eef2ff;border-radius:999px;overflow:hidden;margin-bottom:12px;"><div id="generation-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#4f46e5,#a855f7);border-radius:999px;transition:width .35s ease;"></div></div><div style="display:flex;justify-content:space-between;color:#6b7280;font-weight:800;"><span>Процесс</span><span id="generation-percent">0%</span></div></div></div>
+<script>const form=document.getElementById('ai-create-form'),overlay=document.getElementById('generation-overlay'),bar=document.getElementById('generation-bar'),percent=document.getElementById('generation-percent'),step=document.getElementById('generation-step');const steps=['Анализируем нишу...','Генерируем дизайн и цветовую схему...','Подбираем категории...','Создаем карточки товаров...','Собираем предпросмотр...'];if(form){form.addEventListener('submit',()=>{overlay.style.display='flex';let value=3;setInterval(()=>{if(value<94){value+=Math.max(1,Math.round((96-value)/10));bar.style.width=value+'%';percent.textContent=value+'%';step.textContent=steps[Math.min(steps.length-1,Math.floor(value/20))];}},600);});}</script>
 {% endblock %}

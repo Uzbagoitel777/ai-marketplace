@@ -1,45 +1,31 @@
 {% extends 'base.html' %}
-
-{% block title %}Подтверждение магазина{% endblock %}
+{% block title %}Предпросмотр магазина{% endblock %}
+{% block platform_header %}{% endblock %}
+{% block platform_footer %}{% endblock %}
 
 {% block content %}
-<div class="breadcrumbs">
-    <a href="/">Главная</a>
-    <span class="breadcrumbs-separator">›</span>
-    <a href="{% url 'my_shops' %}">Мои магазины</a>
-    <span class="breadcrumbs-separator">›</span>
-    <a href="{% url 'ai_create_shop' %}">Создать с ИИ</a>
-    <span class="breadcrumbs-separator">›</span>
-    <span>Подтверждение</span>
-</div>
-
-<div style="max-width: 800px; margin: 0 auto;">
-    <div class="card">
-        <div class="card-body">
-            <h1>ИИ создал магазин "{{ shop_name }}"</h1>
-            
-            <form method="post" action="{% url 'confirm_create_shop' %}">
-                {% csrf_token %}
-                
-                <div style="background: var(--primary-light); padding: 20px; border-radius: var(--radius-md); margin-bottom: 24px;">
-                    <h3>Описание магазина</h3>
-                    <p style="line-height: 1.6;">{{ generated_description }}</p>
+<div class="seller-shell">
+    {% include 'shops/_seller_topbar.html' %}
+    <div class="seller-page">
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:22px; align-items:start;">
+            <main>
+                <div class="seller-card" style="overflow:hidden;">
+                    <style>
+                        .preview-page{--primary:{{ favorite_color|default:'#a855f7' }};background:#f6f7fb;padding:22px;border-radius:22px}.preview-hero{background:linear-gradient(135deg,var(--primary),#111827);border-radius:28px;padding:34px;color:white;margin-bottom:18px}.preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}.preview-product{background:white;border-radius:20px;overflow:hidden;box-shadow:0 14px 40px rgba(15,23,42,.10)}.preview-product-visual{width:100%;aspect-ratio:.86;display:grid;place-items:center;text-align:center;padding:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 24%,#fff),#f8fafc);color:var(--primary);font-weight:950;font-size:20px;letter-spacing:-.04em}.preview-product div{padding:12px}.preview-price{color:#ef4444;font-size:22px;font-weight:950}.preview-buy{background:var(--primary);color:white;border-radius:12px;padding:10px;text-align:center;font-weight:950;margin-top:8px}{{ custom_css|safe }}
+                    </style>
+                    <div class="seller-card-body"><h1 style="margin:0 0 6px;">Предпросмотр сайта «{{ shop_name }}»</h1><p class="seller-muted">Проверь внешний вид, категории и первые карточки. Если не нравится — напиши, что переделать.</p></div>
+                    <div class="preview-page">
+                        <section class="preview-hero"><div style="display:inline-flex;padding:7px 10px;border:1px solid rgba(255,255,255,.35);border-radius:999px;margin-bottom:12px;">ИИ-витрина · {{ city }}</div><h2 style="font-size:46px;line-height:.95;margin:0 0 12px;">{{ shop_name }}</h2><p style="max-width:720px;line-height:1.6;opacity:.88;">{{ generated_description }}</p></section>
+                        <div class="preview-grid" style="margin-bottom:18px;">{% for cat in categories %}<div style="background:white;border-radius:18px;padding:16px;font-weight:900;box-shadow:0 10px 30px rgba(15,23,42,.06);">{{ cat }} →</div>{% endfor %}</div>
+                        <div class="preview-grid">{% for product in products|slice:':8' %}<article class="preview-product"><div class="preview-product-visual">{{ product.name|truncatechars:22 }}</div><div><strong>{{ product.name }}</strong><p style="color:#64748b;font-size:13px;min-height:38px;">{{ product.description|truncatewords:9 }}</p><div class="preview-price">{{ product.price }} ₽</div><div class="preview-buy">В корзину</div></div></article>{% empty %}<div class="seller-muted">Товары появятся после подтверждения.</div>{% endfor %}</div>
+                    </div>
                 </div>
-                
-                <div style="background: var(--gray-100); padding: 20px; border-radius: var(--radius-md); margin-bottom: 24px;">
-                    <h3>Предлагаемые категории</h3>
-                    <ul style="margin-top: 12px; padding-left: 20px;">
-                        {% for cat in categories %}
-                            <li>{{ cat }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                
-                <div style="display: flex; gap: 16px;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Подтвердить и создать магазин</button>
-                    <a href="{% url 'ai_create_shop' %}" class="btn btn-secondary" style="flex: 1; text-align: center;">Назад</a>
-                </div>
-            </form>
+            </main>
+            <aside>
+                <div class="seller-card" style="margin-bottom:16px;"><div class="seller-card-body"><h2 style="margin-top:0;">Что будет создано</h2><p><b>Тариф:</b> {{ plan_name }}</p><p><b>Карточек:</b> {{ requested_product_count }}</p><p><b>Цвет:</b> <span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:{{ favorite_color }};vertical-align:middle;"></span> {{ favorite_color }}</p><p><b>Адрес:</b> {{ city }}, {{ address }}</p></div></div>
+                <form method="post" action="{% url 'confirm_create_shop' %}" class="seller-card" style="margin-bottom:16px;"><div class="seller-card-body">{% csrf_token %}<button type="submit" class="btn btn-primary" style="width:100%;padding:14px;">Принять и создать магазин</button></div></form>
+                <form method="post" action="{% url 'ai_create_shop' %}" class="seller-card"><div class="seller-card-body">{% csrf_token %}<h3 style="margin-top:0;">Переделать</h3><input type="hidden" name="shop_name" value="{{ shop_name }}"><input type="hidden" name="shop_description" value="{{ original_description }}"><input type="hidden" name="city" value="{{ city }}"><input type="hidden" name="address" value="{{ address }}"><input type="hidden" name="favorite_color" value="{{ favorite_color }}"><input type="hidden" name="product_count" value="{{ requested_product_count }}"><input type="hidden" name="template_key" value="{{ template_key }}"><textarea name="revision_request" rows="4" class="form-control" placeholder="Например: сделай карточки крупнее, больше как Wildberries, фон светлее, кнопки ярче"></textarea><button type="submit" class="btn btn-outline" style="width:100%;margin-top:12px;">Переделать предпросмотр</button></div></form>
+            </aside>
         </div>
     </div>
 </div>

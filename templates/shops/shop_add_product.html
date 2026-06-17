@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Добавить товар — {{ shop.name }}{% endblock %}
+{% block platform_header %}{% endblock %}
+{% block platform_footer %}{% endblock %}
+
+{% block content %}
+<div class="seller-shell">
+    {% include 'shops/_seller_topbar.html' %}
+    <div class="seller-page">
+        <div class="seller-grid">
+            <aside>
+                <div class="seller-card"><div class="seller-card-body seller-side-menu">
+                    <a href="{% url 'shop_manage' shop.slug %}">Товары <span>←</span></a>
+                    <a class="active" href="{% url 'shop_add_product' shop.slug %}">Добавить товар <span>+</span></a>
+                    <a href="{% url 'shop_manage' shop.slug %}#categories">Категории <span>{{ categories|length }}</span></a>
+                    <a href="{% url 'shop_front' shop.slug %}?preview=1" target="_blank">На сайт <span>↗</span></a>
+                        <a href="#" data-copy-shop-link data-shop-url="{% url 'shop_front' shop.slug %}">Ссылка покупателя <span>⧉</span></a>
+                </div></div>
+            </aside>
+            <main>
+                <section class="seller-card">
+                    <div class="seller-card-body">
+                        <h1 style="margin:0 0 6px;">Добавить товар</h1>
+                        <p class="seller-muted">Создание отдельной карточки товара в ЛК продавца.</p>
+                        <form method="post" enctype="multipart/form-data" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:18px;">
+                            {% csrf_token %}
+                            <div><label class="form-label">Название *</label><input name="name" class="form-control" required placeholder="Например: Сывороточный протеин 900 г"></div>
+                            <div><label class="form-label">Цена *</label><input name="price" class="form-control" required placeholder="2065"></div>
+                            <div><label class="form-label">Остаток *</label><input name="stock" type="number" min="0" value="10" class="form-control" required></div>
+                            <div><label class="form-label">Категория</label><select name="category" class="form-control"><option value="">Без категории</option>{% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
+                            <div><label class="form-label">Бренд</label><select name="brand" class="form-control"><option value="">Без бренда</option>{% for b in brands %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}</select></div>
+                            <div><label class="form-label">Фото</label><input name="image" type="file" class="form-control"></div>
+                            <div style="grid-column:1/-1;"><label class="form-label">Ссылка на фото</label><input name="image_url" class="form-control" placeholder="https://images.unsplash.com/..."></div>
+                            <div style="grid-column:1/-1;"><label class="form-label">Описание *</label><textarea name="description" rows="5" class="form-control" required placeholder="Краткое понятное описание товара для покупателя"></textarea></div>
+                            <div class="seller-action-row" style="grid-column:1/-1;"><button class="btn btn-primary" type="submit">Создать карточку</button><a href="{% url 'shop_manage' shop.slug %}" class="btn btn-outline">Назад к товарам</a></div>
+                        </form>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}

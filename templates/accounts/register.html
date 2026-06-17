@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ role_title }} | AI Партнёры{% endblock %}
+
+{% block content %}
+<div style="max-width: 680px; margin: 0 auto;">
+    <div class="card">
+        <div class="card-body">
+            <h1>{{ role_title }}</h1>
+            <p style="color: var(--gray-600); margin-bottom: 24px;">{{ role_hint }}</p>
+
+            <form method="post">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" for="id_username">Логин</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<div style="color: var(--danger); font-size: var(--font-size-sm);">{{ form.username.errors }}</div>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="id_password1">Пароль</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}<div style="color: var(--danger); font-size: var(--font-size-sm);">{{ form.password1.errors }}</div>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="id_password2">Повтор пароля</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}<div style="color: var(--danger); font-size: var(--font-size-sm);">{{ form.password2.errors }}</div>{% endif %}
+                </div>
+
+                {% if seller_mode %}
+                    <div class="form-group">
+                        <label class="form-label">Форма деятельности</label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                            {% for code, label in legal_forms %}
+                                <label style="border: 1px solid var(--gray-300); border-radius: var(--radius-md); padding: 10px; cursor: pointer;"><input type="radio" name="legal_form" value="{{ code }}" {% if forloop.first %}checked{% endif %}> {{ label }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Название компании / магазина</label>
+                        <input type="text" name="company_name" class="form-control" placeholder="Например: ИП Иванов / ООО Ромашка">
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                        <div class="form-group"><label class="form-label">ИНН</label><input type="text" name="inn" class="form-control" placeholder="ИНН"></div>
+                        <div class="form-group"><label class="form-label">ОГРН/ОГРНИП</label><input type="text" name="ogrn" class="form-control" placeholder="ОГРН или ОГРНИП"></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Юридический адрес</label><textarea name="legal_address" rows="2" class="form-control" placeholder="Город, улица, дом"></textarea></div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                        <div class="form-group"><label class="form-label">Телефон</label><input type="text" name="phone" class="form-control" placeholder="+7 XXX XXX-XX-XX"></div>
+                        <div class="form-group"><label class="form-label">Рабочая почта</label><input type="email" name="contact_email" class="form-control" placeholder="mail@example.ru"></div>
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">{{ submit_label }}</button>
+            </form>
+
+            <div style="margin-top: 18px;"><a href="{% url 'login' %}">Уже есть аккаунт продавца</a></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"]').forEach((input) => input.classList.add('form-control'));
+</script>
+{% endblock %}

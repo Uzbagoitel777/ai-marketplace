@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'shops/shop_base.html' %}
 
 {% block title %}Заказ оформлен - {{ shop.name }}{% endblock %}
 
 {% block content %}
-<!-- Breadcrumbs -->
+
 <div class="breadcrumbs">
-    <a href="/">Главная</a>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
@@ -63,6 +63,12 @@
                     {% endfor %}
                 </tbody>
                 <tfoot>
+                    {% if shop.delivery_enabled %}
+                    <tr>
+                        <td colspan="3" style="text-align: right;">Доставка{% if order.delivery_service %} ({{ order.delivery_service }}){% endif %}:</td>
+                        <td>{{ order.delivery_price }} ₽</td>
+                    </tr>
+                    {% endif %}
                     <tr style="font-weight: 600; border-top: 2px solid var(--gray-300);">
                         <td colspan="3" style="text-align: right;">Итого:</td>
                         <td>{{ order.total_amount }} ₽</td>

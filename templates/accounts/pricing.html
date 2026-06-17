@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Тарифы | AI Партнёры{% endblock %}
+
+{% block content %}
+<section class="section" style="text-align: center; max-width: 920px; margin: 0 auto 32px;">
+    <h1>Тарифы платформы</h1>
+    <p style="font-size: 18px; color: var(--gray-600);">Продавец выбирает тариф, генерирует отдельный интернет-магазин, управляет каталогом через CRUD и получает аналитику продаж.</p>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+    {% for plan in plans %}
+        <div class="card" style="border: 2px solid {% if plan.code == 'business' %}#7c3aed{% elif current_profile and current_profile.plan == plan.code %}var(--primary){% else %}var(--gray-200){% endif %}; {% if plan.code == 'business' %}box-shadow: 0 18px 45px rgba(124,58,237,.18);{% endif %}">
+            <div class="card-body">
+                <div class="badge {% if plan.code == 'business' %}badge-warning{% else %}badge-info{% endif %}" style="margin-bottom: 12px;">{{ plan.name }}</div>
+                <h2 style="margin-bottom: 8px; {% if plan.code == 'business' %}color:#7c3aed;{% endif %}">{{ plan.price_label }}</h2>
+                <p style="color: var(--gray-600); min-height: 76px;">{{ plan.description }}</p>
+                <ul style="line-height: 2; padding-left: 20px; margin: 20px 0;">
+                    <li>Магазинов: до {{ plan.shop_limit }}</li>
+                    <li>ИИ-генераций: {{ plan.ai_label|default:plan.ai_limit }}</li>
+                    {% if plan.commission != None %}
+                        <li>Комиссия с заказов: <strong>{{ plan.commission }}%</strong>{% if plan.code == 'business' %} без нашего хостинга{% endif %}</li>
+                    {% endif %}
+                    {% if plan.code == 'business' %}
+                        <li style="color:#16a34a; font-weight:700;">Комиссия 0% при хостинге на наших мощностях</li>
+                        <li>Наполнение каталога: от 50 товаров</li>
+                        <li>Премиальный дизайн и интеграции</li>
+                    {% elif plan.code == 'start' %}
+                        <li>{{ plan.assistant }}</li>
+                        <li>Базовый внешний вид магазина</li>
+                        <li>Стартовое наполнение: 12 товаров</li>
+                        <li>CRUD товаров, категорий, брендов, новостей</li>
+                    {% else %}
+                        <li>{{ plan.assistant }}</li>
+                        <li>CRUD в демо-кабинете</li>
+                    {% endif %}
+                    {% if plan.download_enabled %}<li>Скачивание сайта архивом</li>{% endif %}
+                </ul>
+                {% if user.is_authenticated %}
+                    {% if current_profile and current_profile.plan == plan.code %}
+                        <button class="btn btn-secondary" style="width: 100%;" disabled>Текущий тариф</button>
+                    {% elif plan.code == 'business' %}
+                        <a href="#business-calculator" class="btn btn-primary" style="width: 100%; text-align: center; background:#7c3aed;">Рассчитать Business</a>
+                    {% else %}
+                        <button type="button" class="btn btn-primary plan-pay-btn" style="width: 100%;" data-plan="{{ plan.code }}" data-title="{{ plan.name }}" data-price="{{ plan.price_label }}">Выбрать тариф</button>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'register_seller' %}" class="btn btn-primary" style="width: 100%; text-align: center;">Зарегистрироваться</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% if user.is_authenticated and current_profile %}
+<section class="section" id="business-calculator">
+    <div class="card" style="border: 2px solid #7c3aed;">
+        <div class="card-body">
+            <div class="badge badge-warning" style="margin-bottom: 12px;">Business</div>
+            <h2>Калькулятор Business</h2>
+            <p style="color: var(--gray-600);">Расчет доступен после регистрации продавца. База включает кастомную платформу, аналитику, CRUD, умный ИИ и первичное наполнение на 50 товаров.</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin: 24px 0;">
+                <div class="form-group">
+                    <label class="form-label">Количество магазинов: <span id="stores-value">1</span></label>
+                    <input type="range" id="stores" min="1" max="10" value="1" class="form-control">
+                    <small>Первый магазин входит в базу, каждый следующий +3 000 ₽/мес.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Наполнение каталога: <span id="products-value">50</span> товаров</label>
+                    <input type="range" id="products" min="50" max="500" step="50" value="50" class="form-control">
+                    <small>50 товаров входят в базу, каждые следующие 50 товаров +8 000 ₽ разово.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ИИ-генерации сайтов</label>
+                    <select id="ai-level" class="form-control">
+                        <option value="0">10 генераций / мес</option>
+                        <option value="12000">50 генераций / мес (+12 000 ₽/мес)</option>
+                        <option value="25000" selected>Неограниченно (+25 000 ₽/мес)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Уровень ИИ-помощника</label>
+                    <select id="assistant-level" class="form-control">
+                        <option value="0">Базовый</option>
+                        <option value="9000" selected>Умный (+9 000 ₽/мес)</option>
+                        <option value="18000">Премиум-продавец + покупатель (+18 000 ₽/мес)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Хостинг</label>
+                    <select id="hosting" class="form-control">
+                        <option value="0">На стороне продавца — комиссия 6%</option>
+                        <option value="9000" selected>На наших мощностях (+9 000 ₽/мес) — комиссия 0%</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Интеграции доставки и оплаты: <span id="integrations-value">2</span></label>
+                    <input type="range" id="integrations" min="0" max="6" value="2" class="form-control">
+                    <small>Каждая интеграция +5 000 ₽ разово.</small>
+                </div>
+                <label style="display:flex; gap:10px; align-items:center; border:1px solid var(--gray-200); padding:12px; border-radius:12px;"><input type="checkbox" id="premium-design" checked> Премиальный дизайн +15 000 ₽ разово</label>
+                <label style="display:flex; gap:10px; align-items:center; border:1px solid var(--gray-200); padding:12px; border-radius:12px;"><input type="checkbox" id="support" checked> Премиальное обслуживание +12 000 ₽/мес</label>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; margin-top:20px;">
+                <div style="background:#f5f3ff; border:1px solid #c4b5fd; border-radius:16px; padding:18px;">
+                    <div style="color:#6d28d9; font-weight:700;">Ежемесячно</div>
+                    <div style="font-size:32px; font-weight:800; color:#7c3aed;"><span id="monthly-total">0</span> ₽</div>
+                </div>
+                <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:16px; padding:18px;">
+                    <div style="color:#15803d; font-weight:700;">Разовый запуск</div>
+                    <div style="font-size:32px; font-weight:800; color:#16a34a;"><span id="setup-total">0</span> ₽</div>
+                </div>
+                <div style="background:#fff7ed; border:1px solid #fdba74; border-radius:16px; padding:18px;">
+                    <div style="color:#c2410c; font-weight:700;">Комиссия</div>
+                    <div style="font-size:32px; font-weight:800; color:#ea580c;"><span id="commission-value">0%</span></div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary plan-pay-btn" style="margin-top:20px; background:#7c3aed;" data-plan="business" data-title="Business" data-price="по расчету">Оплатить Business / оставить заявку</button>
+        </div>
+    </div>
+</section>
+{% else %}
+<section class="section">
+    <div class="card"><div class="card-body" style="text-align:center;">
+        <h2>Business рассчитывается после регистрации</h2>
+        <p style="color: var(--gray-600);">Зарегистрируйтесь как продавец, чтобы собрать конфигурацию: магазины, хостинг, наполнение каталога от 50 товаров, ИИ и интеграции.</p>
+        <a href="{% url 'register_seller' %}" class="btn btn-primary">Зарегистрироваться продавцом</a>
+    </div></div>
+</section>
+{% endif %}
+
+<div id="payment-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+    <div class="card" style="max-width:460px; width:100%;">
+        <div class="card-body">
+            <h2>Оплата тарифа</h2>
+            <p id="payment-text" style="color:var(--gray-600);"></p>
+            <div style="background:var(--gray-100); padding:14px; border-radius:12px; margin:14px 0;">
+                <strong>Демо-оплата для защиты</strong>
+                <p style="margin:6px 0 0; color:var(--gray-600);">После подтверждения тариф подключится в системе.</p>
+            </div>
+            <div style="display:grid; gap:10px; margin-bottom:16px;">
+                <input class="form-control" placeholder="Номер карты: 2200 0000 0000 0000" maxlength="19">
+                <input class="form-control" placeholder="Имя владельца: IVAN IVANOV">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <input class="form-control" placeholder="12/30" maxlength="5">
+                    <input class="form-control" placeholder="CVV" maxlength="3" type="password">
+                </div>
+                <small style="color:var(--gray-500);">Форма демонстрационная: данные не списываются и не сохраняются.</small>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+                <button class="btn btn-secondary" type="button" id="payment-cancel">Отмена</button>
+                <a href="#" class="btn btn-primary" id="payment-confirm">Оплатить и подключить</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const payButtons = document.querySelectorAll('.plan-pay-btn');
+    const modal = document.getElementById('payment-modal');
+    const paymentText = document.getElementById('payment-text');
+    const paymentConfirm = document.getElementById('payment-confirm');
+    const paymentCancel = document.getElementById('payment-cancel');
+    payButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const plan = btn.dataset.plan;
+            paymentText.textContent = `Тариф: ${btn.dataset.title}. Стоимость: ${btn.dataset.price}.`;
+            paymentConfirm.href = `/accounts/pricing/${plan}/`;
+            modal.style.display = 'flex';
+        });
+    });
+    if (paymentCancel) paymentCancel.addEventListener('click', () => modal.style.display = 'none');
+    if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+    function recalcBusiness() {
+        if (!document.getElementById('monthly-total')) return;
+        const stores = Number(document.getElementById('stores')?.value || 1);
+        const products = Number(document.getElementById('products')?.value || 50);
+        const ai = Number(document.getElementById('ai-level')?.value || 0);
+        const assistant = Number(document.getElementById('assistant-level')?.value || 0);
+        const hosting = Number(document.getElementById('hosting')?.value || 0);
+        const integrations = Number(document.getElementById('integrations')?.value || 0);
+        const premiumDesign = document.getElementById('premium-design')?.checked ? 15000 : 0;
+        const support = document.getElementById('support')?.checked ? 12000 : 0;
+        const monthly = 29900 + Math.max(0, stores - 1) * 3000 + ai + assistant + hosting + support;
+        const setup = 30000 + Math.max(0, (products - 50) / 50) * 8000 + integrations * 5000 + premiumDesign;
+        document.getElementById('stores-value').textContent = stores;
+        document.getElementById('products-value').textContent = products;
+        document.getElementById('integrations-value').textContent = integrations;
+        document.getElementById('monthly-total').textContent = monthly.toLocaleString('ru-RU');
+        document.getElementById('setup-total').textContent = setup.toLocaleString('ru-RU');
+        document.getElementById('commission-value').textContent = hosting > 0 ? '0%' : '6%';
+        const businessBtn = document.querySelector('.plan-pay-btn[data-plan="business"]');
+        if (businessBtn) businessBtn.dataset.price = monthly.toLocaleString('ru-RU') + ' ₽/мес + ' + setup.toLocaleString('ru-RU') + ' ₽ запуск';
+    }
+    document.querySelectorAll('#business-calculator input, #business-calculator select').forEach((el) => el.addEventListener('input', recalcBusiness));
+    recalcBusiness();
+</script>
+{% endblock %}

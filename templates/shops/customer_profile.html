@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'shops/shop_base.html' %}
 
 {% block title %}Личный кабинет - {{ shop.name }}{% endblock %}
 
 {% block content %}
-<!-- Breadcrumbs -->
+
 <div class="breadcrumbs">
-    <a href="/">Главная</a>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
@@ -15,7 +15,6 @@
 <h1>Личный кабинет</h1>
 
 <div style="display: flex; gap: 32px; flex-wrap: wrap;">
-    <!-- Sidebar -->
     <aside style="width: 280px; flex-shrink: 0;">
         <div class="card">
             <div class="card-body">
@@ -36,8 +35,6 @@
             </div>
         </div>
     </aside>
-    
-    <!-- Main Content -->
     <main style="flex: 1;">
         <div class="card">
             <div class="card-body">
@@ -70,8 +67,6 @@
                 </form>
             </div>
         </div>
-        
-        <!-- Recent Orders -->
         <div class="card" style="margin-top: 24px;">
             <div class="card-body">
                 <h3>Последние заказы</h3>

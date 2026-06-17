@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ shop.name }}{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/amazon-style.css">
+    <style>
+        :root { --primary: {{ shop.theme_color|default:'#a855f7' }}; --primary-dark: {{ shop.theme_color|default:'#a855f7' }}; }
+        body { background:#f6f7fb; }
+        .store-header { background:rgba(255,255,255,.92); border-bottom:1px solid var(--gray-200); position:sticky; top:0; z-index:1000; backdrop-filter:blur(16px); }
+        .store-header-inner { max-width:1280px; margin:0 auto; padding:12px 24px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:16px; }
+        .store-logo a { font-size:24px; font-weight:950; color:var(--gray-900); text-decoration:none; letter-spacing:-.04em; }
+        .store-nav { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+        .store-nav-item { display:grid; place-items:center; gap:3px; min-width:70px; color:#334155; font-size:12px; font-weight:800; text-decoration:none; }
+        .store-nav-icon { width:34px; height:34px; border-radius:14px; background:#f1f5f9; display:grid; place-items:center; font-size:17px; position:relative; }
+        .store-nav-item:hover .store-nav-icon { background:rgba(168,85,247,.13); color:var(--primary); }
+        .store-cart-badge { position:absolute; right:-6px; top:-7px; background:#ef4444; color:white; border-radius:999px; padding:2px 6px; font-size:10px; }
+        .store-cart-sum { color:var(--primary); font-size:11px; font-weight:900; }
+        .owner-back { background:#111827; color:white!important; border-radius:999px; padding:10px 14px; font-weight:900; text-decoration:none; }
+        {{ shop.custom_css|default:''|safe }}
+    </style>
+</head>
+<body>
+    <header class="store-header">
+        <div class="store-header-inner">
+            <div class="store-logo"><a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a></div>
+            <nav class="store-nav">
+                {% if user.is_authenticated and user.id == shop.owner_id %}
+                    <a href="{% url 'shop_dashboard' shop.slug %}" class="owner-back">← Вернуться в ЛК продавца</a>
+                {% else %}
+                    <a class="store-nav-item" href="{% url 'customer_orders' shop.slug %}"><span class="store-nav-icon">📦</span><span>Заказы</span></a>
+                    <a class="store-nav-item" href="{% url 'favorites_list' shop.slug %}"><span class="store-nav-icon">♡</span><span>Избранное</span></a>
+                    <a class="store-nav-item" href="{% url 'cart_view' shop.slug %}"><span class="store-nav-icon">🛒<span class="store-cart-badge">{{ cart_count|default:0 }}</span></span><span>Корзина</span><span class="store-cart-sum">{{ cart_sum|default:0 }} ₽</span></a>
+                    {% if user.is_authenticated %}<a class="store-nav-item" href="{% url 'customer_profile' shop.slug %}"><span class="store-nav-icon">👤</span><span>Профиль</span></a>{% else %}<a class="store-nav-item" href="{% url 'shop_customer_login' shop.slug %}"><span class="store-nav-icon">👤</span><span>Войти</span></a>{% endif %}
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+    <main class="container" style="padding-top: 28px;">
+        {% if messages %}{% for message in messages %}<div class="alert alert-{% if message.tags == 'error' %}error{% else %}{{ message.tags }}{% endif %}">{{ message }}</div>{% endfor %}{% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="footer"><div class="footer-content"><p>{{ shop.name }} — отдельная витрина магазина</p></div></footer>
+</body>
+</html>

@@ -1,96 +1,51 @@
 {% extends 'base.html' %}
 
-{% block title %}Главная | AI Shop Platform{% endblock %}
+{% block title %}AI Партнёры | Платформа генерации магазинов{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--radius-lg); padding: 60px 40px; text-align: center; color: white; margin-bottom: 48px;">
-    <h1 style="font-size: 48px; margin-bottom: 16px; color: white;">Создай свой интернет-магазин</h1>
-    <p style="font-size: 20px; margin-bottom: 32px; opacity: 0.95;">С помощью искусственного интеллекта за 5 минут</p>
-    {% if user.is_authenticated %}
-        <a href="{% url 'ai_create_shop' %}" class="btn btn-primary" style="background: white; color: #667eea; font-size: 18px; padding: 12px 32px;">Создать магазин с ИИ</a>
-    {% else %}
-        <a href="/admin/login/" class="btn btn-primary" style="background: white; color: #667eea; font-size: 18px; padding: 12px 32px;">Войти и создать магазин</a>
-    {% endif %}
-</section>
-
-<!-- Statistics -->
-<section class="section">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
-        <div class="card" style="text-align: center; padding: 24px;">
-            <div style="font-size: 36px; font-weight: 700; color: var(--primary);">{{ total_shops }}</div>
-            <div style="color: var(--gray-600);">Магазинов создано</div>
-        </div>
-        <div class="card" style="text-align: center; padding: 24px;">
-            <div style="font-size: 36px; font-weight: 700; color: var(--primary);">{{ total_products }}</div>
-            <div style="color: var(--gray-600);">Товаров в каталоге</div>
-        </div>
-        <div class="card" style="text-align: center; padding: 24px;">
-            <div style="font-size: 36px; font-weight: 700; color: var(--primary);">{{ total_users }}</div>
-            <div style="color: var(--gray-600);">Пользователей</div>
-        </div>
-    </div>
-</section>
-
-<!-- Search Shops -->
-<section class="section">
-    <div class="card" style="padding: 24px;">
-        <form method="get" action="{% url 'home' %}" style="display: flex; gap: 12px;">
-            <input type="text" name="q" placeholder="Поиск магазинов..." value="{{ query }}" class="form-control" style="flex: 1;">
-            <button type="submit" class="btn btn-primary">Найти</button>
-        </form>
-    </div>
-</section>
-
-<!-- Shops Grid -->
-<section class="section">
-    <h2>Все магазины</h2>
-    
-    {% if shops %}
-        <div class="products-grid">
-            {% for shop in shops %}
-                <div class="product-card">
-                    <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); height: 160px; display: flex; align-items: center; justify-content: center;">
-                        <span style="font-size: 48px;">🏪</span>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-title">
-                            <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
-                        </h3>
-                        <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: 12px;">{{ shop.description|truncatewords:15 }}</p>
-                        <div class="product-meta">
-                            <span class="badge badge-info">Товаров: {{ shop.products.count }}</span>
-                            <a href="{% url 'shop_front' shop.slug %}" class="btn btn-primary" style="padding: 6px 16px;">Перейти</a>
-                        </div>
-                        <div style="margin-top: 12px; font-size: var(--font-size-xs); color: var(--gray-500);">
-                            Создан: {{ shop.created_at|date:"d.m.Y" }}
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Pagination -->
-        {% if shops.has_other_pages %}
-            <div style="display: flex; justify-content: center; gap: 8px; margin-top: 32px;">
-                {% if shops.has_previous %}
-                    <a href="?page={{ shops.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="btn btn-secondary">← Назад</a>
-                {% endif %}
-                
-                <span class="btn" style="background: var(--primary); color: white; cursor: default;">{{ shops.number }} / {{ shops.paginator.num_pages }}</span>
-                
-                {% if shops.has_next %}
-                    <a href="?page={{ shops.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="btn btn-secondary">Вперёд →</a>
-                {% endif %}
-            </div>
-        {% endif %}
-    {% else %}
-        <div class="card" style="text-align: center; padding: 48px;">
-            <p style="font-size: 18px; color: var(--gray-600);">Магазинов пока нет</p>
+<section class="section" style="background: linear-gradient(135deg, #111827 0%, #4f46e5 100%); border-radius: var(--radius-lg); padding: 64px 40px; color: white; margin-bottom: 40px;">
+    <div style="max-width: 900px;">
+        <div class="badge badge-success" style="margin-bottom: 16px;">SaaS для продавцов</div>
+        <h1 style="font-size: 48px; line-height: 1.1; color: white; margin-bottom: 18px;">Платформа, где предприниматель генерирует собственный интернет-магазин через ИИ</h1>
+        <p style="font-size: 20px; opacity: 0.94; max-width: 760px; margin-bottom: 28px;">Продавец описывает идею, выбирает базовый шаблон, получает отдельную витрину, CRUD-кабинет, аналитику, корзину, заказы, доставку и ИИ-помощника для покупателей.</p>
+        <div style="display: flex; gap: 14px; flex-wrap: wrap;">
             {% if user.is_authenticated %}
-                <a href="{% url 'ai_create_shop' %}" class="btn btn-primary" style="margin-top: 16px;">Создать первый магазин</a>
+                <a href="{% url 'ai_create_shop' %}" class="btn btn-primary" style="background: white; color: #4338ca; padding: 14px 26px; font-size: 17px;">Сгенерировать магазин</a>
+                <a href="{% url 'my_shops' %}" class="btn btn-outline" style="border-color: white; color: white; padding: 14px 26px; font-size: 17px;">Кабинет продавца</a>
+            {% else %}
+                <a href="{% url 'register_seller' %}" class="btn btn-primary" style="background: white; color: #4338ca; padding: 14px 26px; font-size: 17px;">Зарегистрироваться продавцом</a>
+                <a href="{% url 'pricing' %}" class="btn btn-outline" style="border-color: white; color: white; padding: 14px 26px; font-size: 17px;">Посмотреть тарифы</a>
             {% endif %}
         </div>
-    {% endif %}
+    </div>
+</section>
+
+<section class="section">
+    <h2>Что получает продавец</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+        <div class="card"><div class="card-body"><h3>Отдельный сайт магазина</h3><p>Витрина открывается как отдельный сайт с каталогом, карточками, корзиной, входом покупателя и оформлением заказа.</p></div></div>
+        <div class="card"><div class="card-body"><h3>CRUD-кабинет</h3><p>Продавец управляет товарами, категориями, брендами, новостями, дизайном, доставкой и оплатой.</p></div></div>
+        <div class="card"><div class="card-body"><h3>ИИ-помощник</h3><p>Помощник на витрине подсказывает товары, добавляет позиции в корзину и избранное по просьбе клиента.</p></div></div>
+        <div class="card"><div class="card-body"><h3>Аналитика</h3><p>Владелец видит заказы, выручку, статусы, популярные товары и динамику продаж.</p></div></div>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Модель заработка</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+        <div class="card" style="text-align: center; padding: 24px;"><div style="font-size: 34px; font-weight: 700; color: var(--primary);">подписка</div><div>Free для демо, Start для малого бизнеса, Business под ключ</div></div>
+        <div class="card" style="text-align: center; padding: 24px;"><div style="font-size: 34px; font-weight: 700; color: var(--primary);">0–15%</div><div>комиссия с заказов: Free без продаж, Start 15%, Business 0% при нашем хостинге или 6% без него</div></div>
+        <div class="card" style="text-align: center; padding: 24px;"><div style="font-size: 34px; font-weight: 700; color: var(--primary);">опции</div><div>хостинг, премиальный дизайн, умный ИИ, генерация контента</div></div>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Показатели MVP</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 18px;">
+        <div class="card" style="text-align: center; padding: 20px;"><div style="font-size: 30px; font-weight: 700; color: var(--primary);">{{ total_shops }}</div><div>магазинов</div></div>
+        <div class="card" style="text-align: center; padding: 20px;"><div style="font-size: 30px; font-weight: 700; color: var(--primary);">{{ total_products }}</div><div>товаров</div></div>
+        <div class="card" style="text-align: center; padding: 20px;"><div style="font-size: 30px; font-weight: 700; color: var(--primary);">{{ total_orders }}</div><div>заказов</div></div>
+        <div class="card" style="text-align: center; padding: 20px;"><div style="font-size: 30px; font-weight: 700; color: var(--primary);">{{ total_gmv }} ₽</div><div>оборот магазинов</div></div>
+    </div>
 </section>
 {% endblock %}

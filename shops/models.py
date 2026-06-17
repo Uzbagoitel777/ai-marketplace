@@ -7,6 +7,18 @@ class Shop(models.Model):
     slug = models.SlugField(unique=True, verbose_name='URL-адрес')
     description = models.TextField(blank=True, verbose_name='Описание')
     custom_css = models.TextField(blank=True, null=True, verbose_name='Кастомный CSS')
+    template_key = models.CharField(max_length=40, default='modern', verbose_name='Базовый шаблон')
+    is_demo = models.BooleanField(default=False, verbose_name='Демо-магазин')
+    assistant_level = models.CharField(max_length=20, default='basic', verbose_name='Уровень ИИ-помощника')
+    city = models.CharField(max_length=100, default='Екатеринбург', verbose_name='Город магазина')
+    address = models.CharField(max_length=250, blank=True, verbose_name='Адрес магазина')
+    hosting_enabled = models.BooleanField(default=False, verbose_name='Хостинг на платформе')
+    theme_color = models.CharField(max_length=20, default='#4361ee', verbose_name='Цвет темы')
+    delivery_enabled = models.BooleanField(default=True, verbose_name='Доставка включена')
+    delivery_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Стоимость доставки')
+    delivery_description = models.TextField(blank=True, default='Доставка рассчитывается при оформлении заказа', verbose_name='Описание доставки')
+    payment_enabled = models.BooleanField(default=True, verbose_name='Оплата включена')
+    payment_methods = models.CharField(max_length=200, default='Банковская карта, оплата при получении', verbose_name='Способы оплаты')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     
     def __str__(self):
@@ -50,6 +62,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена')
     stock = models.IntegerField(default=0, verbose_name='Количество на складе')
     image = models.ImageField(upload_to='products/', blank=True, null=True, verbose_name='Изображение')
+    image_url = models.URLField(blank=True, verbose_name='Ссылка на изображение')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
     
     def __str__(self):
@@ -72,6 +85,42 @@ class News(models.Model):
         verbose_name = 'Новость'
         verbose_name_plural = 'Новости'
         ordering = ['-created_at']
+
+
+class Warehouse(models.Model):
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='warehouses')
+    name = models.CharField(max_length=120, verbose_name='Название склада/магазина')
+    city = models.CharField(max_length=100, verbose_name='Город')
+    address = models.CharField(max_length=250, verbose_name='Адрес')
+    delivery_services = models.CharField(max_length=250, default='Самовывоз, Курьер, СДЭК', verbose_name='Службы доставки')
+    is_pickup_point = models.BooleanField(default=True, verbose_name='Доступен самовывоз')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.name} — {self.city}'
+
+    class Meta:
+        verbose_name = 'Склад/магазин'
+        verbose_name_plural = 'Склады/магазины'
+
+
+class PaymentAccount(models.Model):
+    shop = models.OneToOneField(Shop, on_delete=models.CASCADE, related_name='payment_account')
+    recipient_name = models.CharField(max_length=200, blank=True, verbose_name='Получатель')
+    bank_name = models.CharField(max_length=160, blank=True, verbose_name='Банк')
+    account_number = models.CharField(max_length=40, blank=True, verbose_name='Расчетный счет')
+    bik = models.CharField(max_length=20, blank=True, verbose_name='БИК')
+    inn = models.CharField(max_length=20, blank=True, verbose_name='ИНН получателя')
+    payment_comment = models.CharField(max_length=250, blank=True, verbose_name='Комментарий')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.recipient_name or f'Счет магазина {self.shop.name}'
+
+    class Meta:
+        verbose_name = 'Счет для выплат'
+        verbose_name_plural = 'Счета для выплат'
+
 
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts')
@@ -127,6 +176,9 @@ class Order(models.Model):
     comment = models.TextField(blank=True, verbose_name='Комментарий')
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name='Статус')
+    delivery_service = models.CharField(max_length=50, blank=True, verbose_name='Служба доставки')
+    delivery_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Стоимость доставки')
+    customer_city = models.CharField(max_length=100, blank=True, verbose_name='Город клиента')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Общая сумма')
     
     def __str__(self):

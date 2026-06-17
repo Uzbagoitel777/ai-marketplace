@@ -1,0 +1,46 @@
+{% extends 'shops/shop_base.html' %}
+
+{% block title %}Регистрация покупателя | {{ shop.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 620px; margin: 0 auto;">
+    <div class="card" style="box-shadow: var(--shadow-lg); overflow:hidden;">
+        <div style="background:linear-gradient(135deg,var(--primary),#111827); color:white; padding:28px;">
+            <div class="badge badge-success" style="margin-bottom:12px;">Аккаунт магазина</div>
+            <h1 style="color:white; margin:0 0 8px;">Создать аккаунт покупателя</h1>
+            <p style="margin:0; opacity:.9;">Аккаунт работает только внутри витрины «{{ shop.name }}»: корзина, избранное, заказы и быстрые покупки.</p>
+        </div>
+        <div class="card-body">
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    {% for field in form %}
+                        {% for error in field.errors %}<div>{{ error }}</div>{% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                </div>
+            {% endif %}
+            <form method="post" style="display:grid; gap:16px;">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="id_username">Имя пользователя</label>
+                    <input type="text" name="username" id="id_username" class="form-control" autocomplete="username" required maxlength="150" placeholder="Например: hizuf">
+                    <small style="color:var(--gray-500);">Можно использовать буквы, цифры и символы @ . + - _</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="id_password1">Пароль</label>
+                    <input type="password" name="password1" id="id_password1" class="form-control" autocomplete="new-password" required placeholder="Минимум 8 символов">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="id_password2">Повторите пароль</label>
+                    <input type="password" name="password2" id="id_password2" class="form-control" autocomplete="new-password" required placeholder="Введите пароль еще раз">
+                </div>
+                <div style="background:var(--gray-100); border-radius:14px; padding:14px; color:var(--gray-600); font-size:14px;">
+                    Пароль нужен только для демонстрационного аккаунта покупателя. Не используйте здесь реальные банковские или личные пароли.
+                </div>
+                <button class="btn btn-primary" type="submit" style="width: 100%; padding:14px;">Зарегистрироваться</button>
+            </form>
+            <p style="margin-top: 18px; text-align:center;"><a href="{% url 'shop_customer_login' shop.slug %}">Уже есть аккаунт? Войти</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

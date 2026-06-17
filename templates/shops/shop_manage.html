@@ -1,109 +1,139 @@
 {% extends 'base.html' %}
-
-{% block title %}Управление: {{ shop.name }}{% endblock %}
+{% block title %}Товары — {{ shop.name }}{% endblock %}
+{% block platform_header %}{% endblock %}
+{% block platform_footer %}{% endblock %}
 
 {% block content %}
-<!-- Breadcrumbs -->
-<div class="breadcrumbs">
-    <a href="/">Главная</a>
-    <span class="breadcrumbs-separator">›</span>
-    <a href="{% url 'my_shops' %}">Мои магазины</a>
-    <span class="breadcrumbs-separator">›</span>
-    <span>Управление: {{ shop.name }}</span>
-</div>
-
-<h1>Управление магазином: {{ shop.name }}</h1>
-
-<div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px;">
-    <a href="{% url 'shop_front' shop.slug %}" class="btn btn-primary" target="_blank">Смотреть витрину</a>
-    <a href="{% url 'shop_dashboard' shop.slug %}" class="btn btn-secondary">Аналитика и статистика</a>
-    <a href="/admin/shops/product/add/?shop={{ shop.id }}" class="btn btn-outline">Добавить товар</a>
-    <a href="/admin/shops/category/add/?shop={{ shop.id }}" class="btn btn-outline">Добавить категорию</a>
-    <a href="/admin/shops/news/add/?shop={{ shop.id }}" class="btn btn-outline">Добавить новость</a>
-</div>
-
-<!-- Товары -->
-<div class="card" style="margin-bottom: 32px;">
-    <div class="card-body">
-        <h2>Товары ({{ products|length }})</h2>
-        {% if products %}
-            <div style="overflow-x: auto;">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Название</th>
-                            <th>Категория</th>
-                            <th>Цена</th>
-                            <th>В наличии</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for product in products %}
-                            <tr>
-                                <td>{{ product.name }}</td>
-                                <td>{{ product.category.name|default:"—" }}</td>
-                                <td>{{ product.price }} ₽</td>
-                                <td>{{ product.stock }}</td>
-                                <td>
-                                    <a href="/admin/shops/product/{{ product.id }}/change/" class="btn btn-outline" style="padding: 4px 8px; font-size: var(--font-size-xs);">Ред.</a>
-                                    <a href="{% url 'delete_product' shop.slug product.id %}" class="btn btn-danger" style="padding: 4px 8px; font-size: var(--font-size-xs);" onclick="return confirm('Удалить товар?')">Удалить</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p style="color: var(--gray-600);">Нет товаров. <a href="/admin/shops/product/add/?shop={{ shop.id }}">Добавить первый товар</a></p>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Категории -->
-<div class="card" style="margin-bottom: 32px;">
-    <div class="card-body">
-        <h2>Категории ({{ categories|length }})</h2>
-        {% if categories %}
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                {% for category in categories %}
-                    <div class="card" style="padding: 12px 16px; display: inline-block;">
-                        {{ category.name }}
-                        <a href="/admin/shops/category/{{ category.id }}/change/" style="margin-left: 8px;">✏️</a>
-                        <a href="{% url 'delete_category' shop.slug category.id %}" style="margin-left: 4px; color: var(--danger);" onclick="return confirm('Удалить категорию?')">🗑️</a>
+<div class="seller-shell">
+    {% include 'shops/_seller_topbar.html' %}
+    <div class="seller-page">
+        <div class="seller-grid">
+            <aside>
+                <div class="seller-card">
+                    <div class="seller-card-body seller-side-menu">
+                        <a class="active" href="#products">Товары <span>{{ products|length }}</span></a>
+                        <a href="{% url 'shop_add_product' shop.slug %}">Добавить товар <span>+</span></a>
+                        <a href="#categories">Категории <span>{{ categories|length }}</span></a>
+                        <a href="#brands">Бренды <span>{{ brands|length }}</span></a>
+                        <a href="#news">Новости <span>{{ news_list|length }}</span></a>
+                        <a href="#integrations">Доставка и оплата <span>→</span></a>
+                        <a href="#design">Дизайн <span>CSS</span></a>
+                        <a href="{% url 'shop_front' shop.slug %}?preview=1" target="_blank">На сайт <span>↗</span></a>
+                        <a href="#" data-copy-shop-link data-shop-url="{% url 'shop_front' shop.slug %}">Ссылка покупателя <span>⧉</span></a>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p style="color: var(--gray-600);">Нет категорий. <a href="/admin/shops/category/add/?shop={{ shop.id }}">Добавить категорию</a></p>
-        {% endif %}
-    </div>
-</div>
+                </div>
+            </aside>
 
-<!-- Новости -->
-<div class="card">
-    <div class="card-body">
-        <h2>Новости ({{ news_list|length }})</h2>
-        {% if news_list %}
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                {% for news in news_list %}
-                    <div style="border-bottom: 1px solid var(--gray-200); padding-bottom: 12px;">
-                        <div style="font-weight: 600;">{{ news.title }}</div>
-                        <div style="font-size: var(--font-size-xs); color: var(--gray-500);">{{ news.created_at|date:"d.m.Y H:i" }}</div>
-                        <div style="margin-top: 8px;">
-                            <a href="/admin/shops/news/{{ news.id }}/change/" class="btn btn-outline" style="padding: 4px 8px; font-size: var(--font-size-xs);">Ред.</a>
-                            <a href="{% url 'delete_news' shop.slug news.id %}" class="btn btn-danger" style="padding: 4px 8px; font-size: var(--font-size-xs);" onclick="return confirm('Удалить новость?')">Удалить</a>
+            <main>
+                <section id="products" class="seller-card" style="margin-bottom:18px;">
+                    <div class="seller-card-body" style="display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:center;">
+                        <div>
+                            <h1 style="margin:0 0 4px;">Активные товары</h1>
+                            <p class="seller-muted" style="margin:0;">Список подгружается порциями при прокрутке страницы.</p>
                         </div>
+                        <a href="{% url 'shop_add_product' shop.slug %}" class="btn btn-primary">+ Добавить товар</a>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p style="color: var(--gray-600);">Нет новостей. <a href="/admin/shops/news/add/?shop={{ shop.id }}">Добавить новость</a></p>
-        {% endif %}
+                    <div class="seller-product-list" id="sellerProductList">
+                        {% for product in products %}
+                        <div class="seller-product-row {% if forloop.counter > 8 %}is-hidden{% endif %}" data-product-row>
+                            <div>{% if product.image %}<img src="{{ product.image.url }}" class="seller-thumb">{% elif product.image_url %}<img src="{{ product.image_url }}" class="seller-thumb">{% else %}<div class="seller-thumb" style="display:grid;place-items:center;">📦</div>{% endif %}</div>
+                            <div>
+                                <strong>{{ product.name }}</strong>
+                                <div class="seller-product-meta">{{ product.description|truncatewords:10 }}</div>
+                            </div>
+                            <div><span class="seller-muted">Категория</span><br><strong>{{ product.category.name|default:'—' }}</strong></div>
+                            <div><span class="seller-muted">Цена</span><br><strong>{{ product.price }} ₽</strong></div>
+                            <div><span class="seller-muted">Остаток</span><br><strong>{{ product.stock }} шт.</strong></div>
+                            <a href="{% url 'shop_edit_product' shop.slug product.id %}" class="seller-edit-icon" title="Редактировать">✎</a>
+                        </div>
+                        {% empty %}
+                        <div class="seller-card-body" style="text-align:center; padding:48px;">
+                            <h3>Товаров пока нет</h3>
+                            <p class="seller-muted">Добавьте первый товар отдельной страницей.</p>
+                            <a href="{% url 'shop_add_product' shop.slug %}" class="btn btn-primary">Добавить товар</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if products|length > 8 %}<div class="seller-card-body" style="text-align:center;"><button type="button" class="btn btn-outline" id="loadMoreProducts">Показать еще</button></div>{% endif %}
+                </section>
+
+                <section id="categories" class="seller-card" style="margin-bottom:18px;"><div class="seller-card-body"><h2>Категории</h2><form method="post" class="seller-action-row" style="margin-bottom:14px;">{% csrf_token %}<input type="hidden" name="action" value="create_category"><input name="name" class="form-control" placeholder="Новая категория" style="max-width:280px;"><button class="btn btn-primary">Добавить</button></form><div class="seller-action-row">{% for c in categories %}<span class="seller-pill">{{ c.name }} <a href="{% url 'delete_category' shop.slug c.id %}" style="margin-left:8px;color:#dc2626;">×</a></span>{% empty %}<span class="seller-muted">Категорий нет</span>{% endfor %}</div></div></section>
+                <section id="brands" class="seller-card" style="margin-bottom:18px;"><div class="seller-card-body"><h2>Бренды</h2><form method="post" style="display:grid; grid-template-columns:1fr 2fr auto; gap:12px; align-items:end; margin-bottom:14px;">{% csrf_token %}<input type="hidden" name="action" value="create_brand"><div><label class="form-label">Название</label><input name="name" class="form-control"></div><div><label class="form-label">Описание</label><input name="description" class="form-control"></div><button class="btn btn-primary">Добавить</button></form><div class="seller-action-row">{% for b in brands %}<span class="seller-pill">{{ b.name }} <a href="{% url 'delete_brand' shop.slug b.id %}" style="margin-left:8px;color:#dc2626;">×</a></span>{% empty %}<span class="seller-muted">Брендов нет</span>{% endfor %}</div></div></section>
+                <section id="news" class="seller-card" style="margin-bottom:18px;"><div class="seller-card-body"><h2>Новости</h2><form method="post" style="display:grid; gap:12px; margin-bottom:18px;">{% csrf_token %}<input type="hidden" name="action" value="create_news"><input name="title" class="form-control" placeholder="Заголовок"><textarea name="content" rows="3" class="form-control" placeholder="Текст новости"></textarea><button class="btn btn-primary" style="max-width:200px;">Опубликовать</button></form>{% for n in news_list %}<div style="border-top:1px solid #eef2f7; padding:12px 0;"><strong>{{ n.title }}</strong><p class="seller-muted">{{ n.content|truncatewords:20 }}</p><a href="{% url 'delete_news' shop.slug n.id %}" class="btn btn-danger" style="padding:5px 10px;">Удалить</a></div>{% empty %}<span class="seller-muted">Новостей нет</span>{% endfor %}</div></section>
+
+                <section id="integrations" class="seller-card" style="margin-bottom:18px;">
+                    <div class="seller-card-body">
+                        <h2>Доставка и оплата</h2>
+                        <p class="seller-muted">Здесь задаются адрес магазина, склады/точки самовывоза и счет для получения оплаты.</p>
+                        <form method="post" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-bottom:22px;">
+                            {% csrf_token %}<input type="hidden" name="action" value="update_integrations">
+                            <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" name="delivery_enabled" {% if shop.delivery_enabled %}checked{% endif %}> Доставка включена</label>
+                            <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" name="payment_enabled" {% if shop.payment_enabled %}checked{% endif %}> Оплата включена</label>
+                            <div><label class="form-label">Город главного магазина *</label><input name="city" value="{{ shop.city }}" required class="form-control"></div>
+                            <div><label class="form-label">Адрес главного магазина *</label><input name="address" value="{{ shop.address }}" required class="form-control"></div>
+                            <div><label class="form-label">Базовая доставка</label><input name="delivery_price" value="{{ shop.delivery_price }}" class="form-control"></div>
+                            <div><label class="form-label">Способы оплаты</label><input name="payment_methods" value="{{ shop.payment_methods }}" class="form-control"></div>
+                            <div style="grid-column:1/-1;"><label class="form-label">Описание доставки</label><textarea name="delivery_description" rows="3" class="form-control">{{ shop.delivery_description }}</textarea></div>
+                            <button class="btn btn-primary">Сохранить общие настройки</button>
+                        </form>
+
+                        <h3>Магазины и склады</h3>
+                        {% for warehouse in warehouses %}
+                        <form method="post" style="display:grid; grid-template-columns:1fr 1fr 2fr 1.4fr auto auto; gap:10px; align-items:end; padding:12px 0; border-top:1px solid #eef2f7;">
+                            {% csrf_token %}<input type="hidden" name="action" value="update_warehouse"><input type="hidden" name="warehouse_id" value="{{ warehouse.id }}">
+                            <div><label class="form-label">Название</label><input name="warehouse_name" value="{{ warehouse.name }}" class="form-control"></div>
+                            <div><label class="form-label">Город</label><input name="warehouse_city" value="{{ warehouse.city }}" class="form-control"></div>
+                            <div><label class="form-label">Адрес</label><input name="warehouse_address" value="{{ warehouse.address }}" class="form-control"></div>
+                            <div><label class="form-label">Службы доставки</label><input name="warehouse_services" value="{{ warehouse.delivery_services }}" class="form-control"></div>
+                            <label style="display:flex;gap:8px;align-items:center;white-space:nowrap;"><input type="checkbox" name="warehouse_pickup" {% if warehouse.is_pickup_point %}checked{% endif %}> Самовывоз</label>
+                            <div class="seller-action-row"><button class="btn btn-primary" style="padding:8px 12px;">Сохранить</button><a class="btn btn-danger" style="padding:8px 12px;" href="{% url 'delete_warehouse' shop.slug warehouse.id %}" onclick="return confirm('Удалить склад/магазин?')">Удалить</a></div>
+                        </form>
+                        {% empty %}
+                        <p class="seller-muted">Дополнительных складов пока нет. Главный адрес магазина уже используется для самовывоза.</p>
+                        {% endfor %}
+                        <form method="post" style="display:grid; grid-template-columns:1fr 1fr 2fr 1.4fr auto; gap:10px; align-items:end; margin-top:14px; padding:14px; border-radius:18px; background:#f9fafb;">
+                            {% csrf_token %}<input type="hidden" name="action" value="create_warehouse">
+                            <div><label class="form-label">Название</label><input name="warehouse_name" class="form-control" placeholder="Склад №1"></div>
+                            <div><label class="form-label">Город</label><input name="warehouse_city" class="form-control" placeholder="Екатеринбург"></div>
+                            <div><label class="form-label">Адрес</label><input name="warehouse_address" class="form-control" placeholder="ул. Ленина, 10"></div>
+                            <div><label class="form-label">Службы доставки</label><input name="warehouse_services" class="form-control" placeholder="Самовывоз, Курьер, СДЭК"></div>
+                            <div><label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><input type="checkbox" name="warehouse_pickup" checked> Самовывоз</label><button class="btn btn-primary" style="padding:8px 12px;">Добавить</button></div>
+                        </form>
+
+                        <h3 style="margin-top:24px;">Счет для получения оплаты</h3>
+                        <form method="post" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;">
+                            {% csrf_token %}<input type="hidden" name="action" value="update_payment_account">
+                            <div><label class="form-label">Получатель</label><input name="recipient_name" value="{{ payment_account.recipient_name }}" class="form-control" placeholder="ИП Иванов Иван Иванович"></div>
+                            <div><label class="form-label">Банк</label><input name="bank_name" value="{{ payment_account.bank_name }}" class="form-control" placeholder="Т-Банк"></div>
+                            <div><label class="form-label">Расчетный счет</label><input name="account_number" value="{{ payment_account.account_number }}" class="form-control" placeholder="4070..."></div>
+                            <div><label class="form-label">БИК</label><input name="bik" value="{{ payment_account.bik }}" class="form-control" placeholder="0445..."></div>
+                            <div><label class="form-label">ИНН</label><input name="payment_inn" value="{{ payment_account.inn }}" class="form-control"></div>
+                            <div><label class="form-label">Комментарий</label><input name="payment_comment" value="{{ payment_account.payment_comment }}" class="form-control" placeholder="Для тестовых платежей"></div>
+                            <button class="btn btn-primary" style="max-width:240px;">Сохранить счет</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="design" class="seller-card"><div class="seller-card-body"><h2>Дизайн витрины</h2><form method="post" style="display:grid; gap:14px;">{% csrf_token %}<input type="hidden" name="action" value="update_design"><div><label class="form-label">Цвет темы</label><input name="theme_color" type="color" value="{{ shop.theme_color|default:'#4361ee' }}" class="form-control" style="height:48px;"></div><div><label class="form-label">AI CSS витрины</label><textarea name="custom_css" rows="8" class="form-control">{{ shop.custom_css }}</textarea></div><button class="btn btn-primary" style="max-width:220px;">Сохранить дизайн</button></form></div></section>
+            </main>
+        </div>
     </div>
 </div>
-
-<div style="margin-top: 24px;">
-    <a href="{% url 'my_shops' %}" class="btn btn-secondary">← Назад к моим магазинам</a>
-</div>
+<script>
+(function(){
+    const rows = Array.from(document.querySelectorAll('[data-product-row]'));
+    let shown = 8;
+    function reveal(count=6){
+        rows.slice(shown, shown + count).forEach(row => row.classList.remove('is-hidden'));
+        shown += count;
+        const btn = document.getElementById('loadMoreProducts');
+        if (btn && shown >= rows.length) btn.style.display = 'none';
+    }
+    const btn = document.getElementById('loadMoreProducts');
+    if (btn) btn.addEventListener('click', () => reveal(8));
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 260) reveal(6);
+    });
+})();
+</script>
 {% endblock %}

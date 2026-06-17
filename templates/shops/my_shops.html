@@ -1,49 +1,85 @@
 {% extends 'base.html' %}
-
-{% block title %}Мои магазины{% endblock %}
+{% block title %}Личный кабинет продавца{% endblock %}
+{% block platform_header %}{% endblock %}
+{% block platform_footer %}{% endblock %}
 
 {% block content %}
-<!-- Breadcrumbs -->
-<div class="breadcrumbs">
-    <a href="/">Главная</a>
-    <span class="breadcrumbs-separator">›</span>
-    <span>Мои магазины</span>
-</div>
-
-<h1>Мои магазины</h1>
-
-<div style="margin-bottom: 24px;">
-    <a href="{% url 'create_shop' %}" class="btn btn-primary">+ Создать новый магазин</a>
-    <a href="{% url 'ai_create_shop' %}" class="btn btn-outline" style="margin-left: 12px;">🤖 Создать с ИИ</a>
-</div>
-
-{% if shops %}
-    <div class="products-grid">
-        {% for shop in shops %}
-            <div class="product-card">
-                <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); height: 120px; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 48px;">🏪</span>
-                </div>
-                <div class="product-info">
-                    <h3 class="product-title">{{ shop.name }}</h3>
-                    <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: 12px;">{{ shop.description|truncatewords:15 }}</p>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <span class="badge badge-info">Товаров: {{ shop.products.count }}</span>
-                        <span style="font-size: var(--font-size-xs); color: var(--gray-500);">{{ shop.created_at|date:"d.m.Y" }}</span>
-                    </div>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <a href="{% url 'shop_manage' shop.slug %}" class="btn btn-primary" style="padding: 6px 12px; font-size: var(--font-size-sm);">Управлять</a>
-                        <a href="{% url 'shop_front' shop.slug %}" class="btn btn-outline" style="padding: 6px 12px; font-size: var(--font-size-sm);" target="_blank">Смотреть витрину</a>
-                        <a href="{% url 'shop_dashboard' shop.slug %}" class="btn btn-secondary" style="padding: 6px 12px; font-size: var(--font-size-sm);">Аналитика</a>
+<div class="seller-shell">
+    {% include 'shops/_seller_topbar.html' %}
+    <div class="seller-page">
+        <div class="seller-grid">
+            <aside>
+                <div class="seller-balance" style="margin-bottom:16px;">
+                    <div class="seller-muted">Баланс</div>
+                    <strong style="display:block; font-size:28px; margin:6px 0;">{{ total_revenue|default:0 }} ₽</strong>
+                    <div class="seller-muted">Тариф: {{ seller_profile.plan_config.name }}</div>
+                    <div class="seller-action-row" style="margin-top:14px;">
+                        <a href="{% url 'pricing' %}" class="btn btn-primary" style="padding:8px 14px;">Управлять тарифом</a>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
+                <div class="seller-card">
+                    <div class="seller-card-body seller-side-menu">
+                        <a class="active" href="{% url 'my_shops' %}">Мои магазины <span>{{ shops|length }}</span></a>
+                        <a href="{% url 'ai_create_shop' %}">Создать магазин <span>+</span></a>
+                        {% if active_shop %}
+                            <a href="{% url 'shop_dashboard' active_shop.slug %}">Сводка <span>→</span></a>
+                            <a href="{% url 'shop_manage' active_shop.slug %}">Товары <span>{{ products_count }}</span></a>
+                            <a href="{% url 'shop_dashboard' active_shop.slug %}?section=orders">Заказы <span>{{ orders_count }}</span></a>
+                            <a href="{% url 'shop_dashboard' active_shop.slug %}?section=analytics">Аналитика <span>%</span></a>
+                            <a href="{% url 'shop_front' active_shop.slug %}?preview=1" target="_blank">На сайт <span>↗</span></a>
+                            <a href="#" data-copy-shop-link data-shop-url="{% url 'shop_front' active_shop.slug %}">Ссылка покупателя <span>⧉</span></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
+
+            <main>
+                <div class="seller-stat-grid" style="margin-bottom:18px;">
+                    <div class="seller-stat"><span class="seller-muted">Магазины</span><strong>{{ shops|length }} / {{ seller_profile.shop_limit }}</strong></div>
+                    <div class="seller-stat"><span class="seller-muted">Товары</span><strong>{{ products_count }}</strong></div>
+                    <div class="seller-stat"><span class="seller-muted">Заказы</span><strong>{{ orders_count }}</strong></div>
+                    <div class="seller-stat"><span class="seller-muted">Оборот</span><strong>{{ total_revenue }} ₽</strong></div>
+                </div>
+
+                <div class="seller-section-cards" style="margin-bottom:18px;">
+                    <a class="seller-section-card" href="{% url 'ai_create_shop' %}"><strong>Создать магазин</strong><p class="seller-muted">ИИ подготовит витрину, категории, товары и дизайн.</p></a>
+                    {% if active_shop %}
+                    <a class="seller-section-card" href="{% url 'shop_manage' active_shop.slug %}"><strong>Товары</strong><p class="seller-muted">Карточки, остатки, цены, категории и бренды.</p></a>
+                    <a class="seller-section-card" href="{% url 'shop_dashboard' active_shop.slug %}?section=orders"><strong>Заказы</strong><p class="seller-muted">Заявки покупателей и статусы обработки.</p></a>
+                    <a class="seller-section-card" href="{% url 'shop_dashboard' active_shop.slug %}?section=analytics"><strong>Аналитика</strong><p class="seller-muted">Оборот, продажи, средний чек и графики.</p></a>
+                    {% endif %}
+                </div>
+
+                {% if not can_create_shop %}<div class="alert alert-warning">Лимит магазинов по текущему тарифу исчерпан. Для новых проектов подключите тариф выше.</div>{% endif %}
+
+                <div class="seller-card">
+                    <div class="seller-card-body" style="display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:center;">
+                        <div><h2 style="margin-bottom:4px;">Ваши магазины</h2><p class="seller-muted" style="margin:0;">Каждый магазин имеет отдельный сайт для покупателей и отдельный ЛК продавца.</p></div>
+                        <a href="{% url 'ai_create_shop' %}" class="btn btn-primary">+ Новый магазин</a>
+                    </div>
+                    {% if shops %}
+                    <div style="overflow-x:auto;">
+                        <table class="seller-table">
+                            <thead><tr><th>Магазин</th><th>Адрес</th><th>Товары</th><th>Создан</th><th>Действия</th></tr></thead>
+                            <tbody>
+                            {% for shop in shops %}
+                                <tr>
+                                    <td><strong>{{ shop.name }}</strong><br><span class="seller-muted">{{ shop.description|truncatewords:14 }}</span></td>
+                                    <td>{{ shop.city }}<br><span class="seller-muted">{{ shop.address|truncatechars:38 }}</span></td>
+                                    <td>{{ shop.products.count }}</td>
+                                    <td>{{ shop.created_at|date:"d.m.Y" }}</td>
+                                    <td><div class="seller-action-row"><a href="{% url 'shop_dashboard' shop.slug %}" class="btn btn-primary" style="padding:7px 12px;">Открыть ЛК</a><a href="{% url 'shop_front' shop.slug %}?preview=1" class="btn btn-outline" style="padding:7px 12px;" target="_blank">На сайт</a><button type="button" class="btn btn-outline" style="padding:7px 12px;" data-copy-shop-link data-shop-url="{% url 'shop_front' shop.slug %}">Ссылка покупателя</button></div></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="seller-card-body" style="text-align:center; padding:56px;"><h3>Пока нет магазинов</h3><p class="seller-muted">Создайте первый магазин через ИИ.</p><a href="{% url 'ai_create_shop' %}" class="btn btn-primary">Создать первый магазин</a></div>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
     </div>
-{% else %}
-    <div class="card" style="text-align: center; padding: 60px;">
-        <p style="font-size: 18px; color: var(--gray-600); margin-bottom: 16px;">У вас пока нет магазинов</p>
-        <a href="{% url 'create_shop' %}" class="btn btn-primary">Создать первый магазин</a>
-    </div>
-{% endif %}
+</div>
 {% endblock %}

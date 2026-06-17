@@ -1,8 +1,3 @@
-/* ========================================
-   MODERN DESIGN SYSTEM - AI SHOP PLATFORM
-   ======================================== */
-
-/* Root variables */
 :root {
     /* Colors */
     --primary: #4361ee;
@@ -34,15 +29,13 @@
     --spacing-xl: 32px;
     --spacing-2xl: 48px;
     
-    /* Typography */
-    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-size-xs: 12px;
     --font-size-sm: 14px;
     --font-size-md: 16px;
     --font-size-lg: 18px;
     --font-size-xl: 24px;
     --font-size-2xl: 32px;
-    --font-size-3xl: 40px;
     
     /* Border radius */
     --radius-sm: 4px;
@@ -53,12 +46,11 @@
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* Reset & Base */
 * {
     margin: 0;
     padding: 0;
@@ -70,10 +62,9 @@ body {
     font-size: var(--font-size-md);
     line-height: 1.5;
     color: var(--gray-800);
-    background-color: var(--gray-100);
+    background-color: var(--white);
 }
 
-/* Typography */
 h1, h2, h3, h4, h5, h6 {
     margin-bottom: var(--spacing-md);
     font-weight: 600;
@@ -81,10 +72,9 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--gray-900);
 }
 
-h1 { font-size: var(--font-size-3xl); }
-h2 { font-size: var(--font-size-2xl); }
-h3 { font-size: var(--font-size-xl); }
-h4 { font-size: var(--font-size-lg); }
+h1 { font-size: var(--font-size-2xl); }
+h2 { font-size: var(--font-size-xl); }
+h3 { font-size: var(--font-size-lg); }
 
 a {
     color: var(--primary);
@@ -96,7 +86,6 @@ a:hover {
     color: var(--primary-dark);
 }
 
-/* Layout */
 .container {
     max-width: 1280px;
     margin: 0 auto;
@@ -107,7 +96,6 @@ a:hover {
     margin-bottom: var(--spacing-2xl);
 }
 
-/* Header */
 .header {
     background: var(--white);
     box-shadow: var(--shadow-sm);
@@ -138,32 +126,34 @@ a:hover {
     color: inherit;
 }
 
-/* Navigation */
 .nav {
-    background: var(--gray-800);
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
+    border-bottom: 1px solid var(--gray-200);
     padding: var(--spacing-sm) var(--spacing-lg);
 }
 
 .nav-links {
     display: flex;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-sm);
     flex-wrap: wrap;
     max-width: 1280px;
     margin: 0 auto;
 }
 
 .nav-links a {
-    color: var(--white);
+    color: var(--gray-700);
     font-size: var(--font-size-sm);
-    padding: var(--spacing-xs) 0;
-    transition: color 0.2s ease;
+    padding: 8px 12px;
+    border-radius: var(--radius-full);
+    transition: all 0.2s ease;
 }
 
 .nav-links a:hover {
-    color: var(--warning);
+    background: var(--primary-light);
+    color: var(--primary);
 }
 
-/* User Menu */
 .user-menu {
     position: relative;
 }
@@ -210,7 +200,6 @@ a:hover {
     color: var(--primary);
 }
 
-/* Buttons */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -355,6 +344,61 @@ a:hover {
     justify-content: space-between;
     align-items: center;
     margin-top: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+/* Badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    border-radius: var(--radius-full);
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    flex-wrap: wrap;
+}
+
+.breadcrumbs a {
+    color: var(--gray-600);
+}
+
+.breadcrumbs a:hover {
+    color: var(--primary);
+}
+
+.breadcrumbs-separator {
+    color: var(--gray-400);
 }
 
 /* Forms */
@@ -454,60 +498,7 @@ textarea.form-control {
     color: #0c5460;
 }
 
-/* Badge */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    border-radius: var(--radius-full);
-}
-
-.badge-success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.badge-warning {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.badge-danger {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.badge-info {
-    background: #d1ecf1;
-    color: #0c5460;
-}
-
-/* Breadcrumbs */
-.breadcrumbs {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-lg);
-    font-size: var(--font-size-sm);
-    color: var(--gray-600);
-    flex-wrap: wrap;
-}
-
-.breadcrumbs a {
-    color: var(--gray-600);
-}
-
-.breadcrumbs a:hover {
-    color: var(--primary);
-}
-
-.breadcrumbs-separator {
-    color: var(--gray-400);
-}
-
-/* Cart Items */
+/* Cart */
 .cart-item {
     display: flex;
     gap: var(--spacing-md);
@@ -516,6 +507,7 @@ textarea.form-control {
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-sm);
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .cart-item-image {
@@ -588,11 +580,12 @@ textarea.form-control {
     }
     
     .cart-item {
-        flex-wrap: wrap;
+        flex-direction: column;
+        text-align: center;
     }
     
-    h1 { font-size: var(--font-size-2xl); }
-    h2 { font-size: var(--font-size-xl); }
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; }
 }
 
 @media (max-width: 480px) {

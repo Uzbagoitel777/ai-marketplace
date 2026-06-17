@@ -4,8 +4,6 @@
 
 {% block content %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Breadcrumbs -->
 <div class="breadcrumbs">
     <a href="/">Главная</a>
     <span class="breadcrumbs-separator">›</span>
@@ -13,8 +11,6 @@
 </div>
 
 <h1>Панель управления платформой</h1>
-
-<!-- Ключевые метрики -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 24px 0;">
     <div class="card" style="text-align: center; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
         <div style="font-size: 32px; font-weight: 700;">{{ total_users }}</div>
@@ -34,11 +30,29 @@
     </div>
     <div class="card" style="text-align: center; padding: 24px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
         <div style="font-size: 32px; font-weight: 700;">{{ total_revenue }} ₽</div>
-        <div>Выручка</div>
+        <div>GMV магазинов</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 24px; background: linear-gradient(135deg, #111827 0%, #6366f1 100%); color: white;">
+        <div style="font-size: 32px; font-weight: 700;">{{ estimated_mrr }} ₽</div>
+        <div>Расчетный MRR</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 24px; background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%); color: white;">
+        <div style="font-size: 32px; font-weight: 700;">{{ estimated_platform_income }} ₽</div>
+        <div>Доход платформы: подписки + комиссия</div>
     </div>
 </div>
 
-<!-- Графики -->
+<div class="card" style="margin-bottom: 32px;">
+    <div class="card-body">
+        <h3>Бизнес-модель платформы</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+            <div><strong>{{ sellers_count }}</strong><br><span style="color: var(--gray-600);">владельцев магазинов</span></div>
+            <div><strong>{{ paid_sellers_count }}</strong><br><span style="color: var(--gray-600);">платных продавцов</span></div>
+            <div><strong>{{ estimated_commission_income }} ₽</strong><br><span style="color: var(--gray-600);">оценка комиссии с заказов</span></div>
+            <div><strong>Free: {{ plans_distribution.free }}, Start: {{ plans_distribution.start }}, Business: {{ plans_distribution.business }}</strong><br><span style="color: var(--gray-600);">распределение тарифов</span></div>
+        </div>
+    </div>
+</div>
 <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 32px;">
     <div class="card" style="flex: 1; min-width: 300px;">
         <div class="card-body">
@@ -86,8 +100,6 @@
         </div>
     </div>
 </div>
-
-<!-- Последние заказы -->
 <div class="card">
     <div class="card-body">
         <h3>Последние заказы</h3>

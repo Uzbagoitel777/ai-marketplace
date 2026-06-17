@@ -60,14 +60,11 @@ class DeepSeekAPI:
         
         response = self.generate(prompt, temperature=0.7, max_tokens=200)
         
-        # Разбираем ответ в список категорий
         categories = []
         for line in response.split('\n'):
             line = line.strip()
-            # Убираем маркеры списка
             if line.startswith('-') or line.startswith('•') or line.startswith('*'):
                 line = line[1:].strip()
-            # Убираем цифры в начале (1., 2., etc)
             if line and line[0].isdigit() and '.' in line[:3]:
                 line = line.split('.', 1)[1].strip()
             if line and not line.startswith('Пример'):
@@ -86,7 +83,6 @@ class DeepSeekAPI:
     
     def chat_with_customer(self, question, products_info):
         """Чат для покупателя на витрине"""
-        # Ограничиваем информацию о товарах, чтобы не превысить лимиты
         if len(products_info) > 3000:
             products_info = products_info[:3000] + "..."
         

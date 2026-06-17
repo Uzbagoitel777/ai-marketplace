@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'shops/shop_base.html' %}
 
 {% block title %}{{ category.name }} | {{ shop.name }}{% endblock %}
 
@@ -7,20 +7,9 @@
     
     <h1>{{ category.name }}</h1>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+    <div class="products-grid" style="margin-top: 20px;">
         {% for product in products %}
-            <div style="background: white; border: 1px solid #ddd; border-radius: 5px; padding: 15px;">
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 5px;">
-                {% else %}
-                    <div style="width: 100%; height: 200px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 5px;">
-                        Нет фото
-                    </div>
-                {% endif %}
-                <h3>{{ product.name }}</h3>
-                <p style="font-size: 20px; color: #333; font-weight: bold;">{{ product.price }} ₽</p>
-                <a href="{% url 'product_detail' shop.slug product.id %}">Подробнее</a>
-            </div>
+            {% include 'shops/_product_card.html' %}
         {% empty %}
             <p>В этой категории пока нет товаров.</p>
         {% endfor %}

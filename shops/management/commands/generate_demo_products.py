@@ -25,7 +25,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('В магазине нет категорий. Создайте хотя бы одну категорию.'))
             return
         
-        # Создаем бренды для магазина, если их нет
         brand_names = ['Samsung', 'Apple', 'Xiaomi', 'Huawei', 'Sony', 'LG', 'HP', 'Dell', 'Asus', 'Acer']
         brands = []
         for brand_name in brand_names:
@@ -36,7 +35,6 @@ class Command(BaseCommand):
             )
             brands.append(brand)
         
-        # Списки для генерации
         product_names = [
             'Смартфон', 'Ноутбук', 'Наушники', 'Клавиатура', 'Мышь', 'Монитор', 
             'Чехол для телефона', 'Зарядное устройство', 'Внешний аккумулятор', 

@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'shops/shop_base.html' %}
 
 {% block title %}Избранное - {{ shop.name }}{% endblock %}
 
 {% block content %}
-<!-- Breadcrumbs -->
+
 <div class="breadcrumbs">
-    <a href="/">Главная</a>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
@@ -22,6 +22,8 @@
             <div class="product-card">
                 {% if favorite.product.image %}
                     <img src="{{ favorite.product.image.url }}" alt="{{ favorite.product.name }}" class="product-image">
+                {% elif favorite.product.image_url %}
+                    <img src="{{ favorite.product.image_url }}" alt="{{ favorite.product.name }}" class="product-image">
                 {% else %}
                     <div class="product-image" style="display: flex; align-items: center; justify-content: center;">
                         <span style="font-size: 48px;">📦</span>

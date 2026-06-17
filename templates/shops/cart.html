@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'shops/shop_base.html' %}
 
 {% block title %}Корзина - {{ shop.name }}{% endblock %}
 
 {% block content %}
-<!-- Breadcrumbs -->
+
 <div class="breadcrumbs">
-    <a href="/">Главная</a>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
@@ -21,6 +21,8 @@
                 <div class="cart-item">
                     {% if item.product.image %}
                         <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
+                    {% elif item.product.image_url %}
+                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-image">
                     {% else %}
                         <div class="cart-item-image" style="display: flex; align-items: center; justify-content: center;">
                             <span style="font-size: 32px;">📦</span>

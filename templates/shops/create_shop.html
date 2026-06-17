@@ -3,22 +3,18 @@
 {% block title %}Создать магазин{% endblock %}
 
 {% block content %}
-    <h1>Создать новый магазин</h1>
-    
-    <form method="post" style="max-width: 500px; margin-top: 20px;">
-        {% csrf_token %}
-        
-        <div style="margin-bottom: 15px;">
-            <label for="name" style="display: block; margin-bottom: 5px;">Название магазина:</label>
-            <input type="text" name="name" id="name" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label for="description" style="display: block; margin-bottom: 5px;">Описание (необязательно):</label>
-            <textarea name="description" id="description" rows="5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
-        </div>
-        
-        <button type="submit" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Создать</button>
-        <a href="{% url 'my_shops' %}" style="margin-left: 10px;">Отмена</a>
-    </form>
+<div style="max-width: 620px; margin: 0 auto;">
+    <div class="card"><div class="card-body">
+        <h1>Создать магазин вручную</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group"><label class="form-label">Название магазина</label><input type="text" name="name" required class="form-control"></div>
+            <div class="form-group"><label class="form-label">Описание</label><textarea name="description" rows="3" class="form-control"></textarea></div>
+            <div class="form-group"><label class="form-label">Город магазина *</label><input type="text" name="city" required placeholder="Например: Екатеринбург" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Адрес магазина *</label><input type="text" name="address" required placeholder="Улица, дом, офис / пункт самовывоза" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Базовый шаблон</label><select name="template_key" class="form-control"><option value="modern">Modern</option><option value="minimal">Minimal</option><option value="premium">Premium</option></select></div>
+            <button class="btn btn-primary" type="submit" style="width: 100%;">Создать</button>
+        </form>
+    </div></div>
+</div>
 {% endblock %}

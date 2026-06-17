@@ -1,0 +1,102 @@
+<div class="seller-topbar">
+    <div class="seller-topbar-inner">
+        <div class="seller-logo">AI Партнёры</div>
+        <nav class="seller-nav">
+            <a class="{% if seller_section == 'summary' %}active{% endif %}" href="{% if shop %}{% url 'shop_dashboard' shop.slug %}{% else %}{% url 'my_shops' %}{% endif %}">Сводка</a>
+            {% if shop %}
+                <a class="{% if seller_section == 'products' %}active{% endif %}" href="{% url 'shop_manage' shop.slug %}">Товары</a>
+                <a class="{% if seller_section == 'orders' %}active{% endif %}" href="{% url 'shop_dashboard' shop.slug %}?section=orders">Заказы</a>
+                <a class="{% if seller_section == 'prices' %}active{% endif %}" href="{% url 'shop_dashboard' shop.slug %}?section=prices">Цены и скидки</a>
+                <a class="{% if seller_section == 'analytics' %}active{% endif %}" href="{% url 'shop_dashboard' shop.slug %}?section=analytics">Аналитика</a>
+                <a href="{% url 'shop_manage' shop.slug %}#integrations">Доставка и оплата</a>
+                <a href="{% url 'shop_front' shop.slug %}?preview=1" target="_blank">На сайт ↗</a>
+                <button type="button" class="seller-nav-button" data-copy-shop-link data-shop-url="{% url 'shop_front' shop.slug %}">Ссылка покупателя</button>
+            {% else %}
+                <a href="{% url 'ai_create_shop' %}">Создать магазин</a>
+                <a href="{% url 'pricing' %}">Тарифы</a>
+            {% endif %}
+        </nav>
+        <div class="seller-shop-switch" id="sellerShopSwitch">
+            <button class="seller-shop-trigger" type="button" id="sellerShopTrigger">
+                {% if shop %}{{ shop.name }}{% elif active_shop %}{{ active_shop.name }}{% else %}Все магазины{% endif %} ▾
+            </button>
+            <div class="seller-shop-menu" id="sellerShopMenu">
+                <div class="seller-shop-menu-title">Магазины продавца</div>
+                <a href="{% url 'my_shops' %}">Все магазины</a>
+                {% for item in seller_shops %}
+                    <a class="{% if shop and item.id == shop.id %}active{% endif %}" href="{% url 'shop_dashboard' item.slug %}">
+                        {{ item.name }}<br><span class="seller-muted">{{ item.city }}</span>
+                    </a>
+                {% empty %}
+                    <a href="{% url 'ai_create_shop' %}">Создать первый магазин</a>
+                {% endfor %}
+                {% if shop %}
+                    <button type="button" class="seller-shop-menu-copy" data-copy-shop-link data-shop-url="{% url 'shop_front' shop.slug %}">Скопировать ссылку покупателя</button>
+                {% elif active_shop %}
+                    <button type="button" class="seller-shop-menu-copy" data-copy-shop-link data-shop-url="{% url 'shop_front' active_shop.slug %}">Скопировать ссылку покупателя</button>
+                {% endif %}
+                <div class="seller-shop-menu-divider"></div>
+                <a href="{% url 'ai_create_shop' %}">+ Создать магазин</a>
+                <form method="post" action="{% url 'logout' %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="seller-logout-button">Выйти из аккаунта</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="seller-copy-toast" id="sellerCopyToast">Ссылка покупателя скопирована</div>
+<script>
+(function(){
+    const switcher = document.getElementById('sellerShopSwitch');
+    const trigger = document.getElementById('sellerShopTrigger');
+    if (switcher && trigger) {
+        trigger.addEventListener('click', function(e){
+            e.preventDefault();
+            switcher.classList.toggle('is-open');
+        });
+        document.addEventListener('click', function(e){
+            if (!switcher.contains(e.target)) switcher.classList.remove('is-open');
+        });
+    }
+
+    function showToast(text) {
+        const toast = document.getElementById('sellerCopyToast');
+        if (!toast) return;
+        toast.textContent = text || 'Ссылка покупателя скопирована';
+        toast.classList.add('is-visible');
+        window.clearTimeout(window.__sellerCopyToastTimer);
+        window.__sellerCopyToastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 2200);
+    }
+
+    async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+        const input = document.createElement('textarea');
+        input.value = text;
+        input.setAttribute('readonly', 'readonly');
+        input.style.position = 'fixed';
+        input.style.left = '-9999px';
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+    }
+
+    document.addEventListener('click', async function(e){
+        const button = e.target.closest('[data-copy-shop-link]');
+        if (!button) return;
+        e.preventDefault();
+        const path = button.getAttribute('data-shop-url');
+        const url = new URL(path, window.location.origin).toString();
+        try {
+            await copyText(url);
+            showToast('Ссылка для покупателя скопирована: ' + url);
+        } catch (err) {
+            showToast('Не удалось скопировать. Ссылка: ' + url);
+        }
+    });
+})();
+</script>

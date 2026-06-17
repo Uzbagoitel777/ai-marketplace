@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'shops/shop_base.html' %}
 
 {% block title %}{{ product.name }} | {{ shop.name }}{% endblock %}
 
 {% block content %}
-<!-- Breadcrumbs -->
+
 <div class="breadcrumbs">
-    <a href="/">Главная</a>
+    <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
@@ -13,20 +13,22 @@
 </div>
 
 <div style="display: flex; gap: 40px; flex-wrap: wrap;">
-    <!-- Product Image -->
+    
     <div style="flex: 1; min-width: 300px;">
         <div class="card" style="padding: 24px; text-align: center;">
             {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%; border-radius: var(--radius-md);">
+            {% elif product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" style="max-width: 100%; border-radius: var(--radius-md);">
             {% else %}
-                <div style="width: 100%; height: 300px; background: var(--gray-200); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md);">
+                <div style="width: 100%; height: 300px; background: linear-gradient(135deg, var(--primary-light), var(--gray-200)); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md);">
                     <span style="font-size: 64px;">📦</span>
                 </div>
             {% endif %}
         </div>
     </div>
     
-    <!-- Product Info -->
+    
     <div style="flex: 1; min-width: 300px;">
         <div class="card" style="padding: 32px;">
             <h1 style="margin-bottom: 16px;">{{ product.name }}</h1>
@@ -42,21 +44,21 @@
                 {{ product.price }} ₽
             </div>
             
-            <div style="margin-bottom: 24px;">
-                {% if product.stock > 0 %}
-                    <span class="badge badge-success">В наличии ({{ product.stock }} шт.)</span>
+            <div style="margin-bottom: 24px; color: var(--gray-600);">🚚 Доставка примерно 1–3 дня по городу, 3–7 дней в другой регион.</div>
+
+            {% if user.is_authenticated and user.id == shop.owner_id %}
+                <div class="alert alert-info">Это ваш магазин. Покупка собственных товаров отключена. Управление и статистика находятся в шапке витрины.</div>
+                <a href="{% url 'shop_manage' shop.slug %}" class="btn btn-primary" style="margin-bottom: 24px;">Редактировать товар в кабинете</a>
+            {% elif product.stock > 0 %}
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_to_cart' shop.slug product.id %}" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" style="width: 100px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 32px;">🛒 Добавить в корзину</button>
+                    </form>
                 {% else %}
-                    <span class="badge badge-danger">Нет в наличии</span>
+                    <a href="{% url 'shop_customer_login' shop.slug %}" class="btn btn-primary" style="margin-bottom: 24px;">Войти, чтобы добавить в корзину</a>
                 {% endif %}
-            </div>
-            
-            {% if product.stock > 0 %}
-                <form method="post" action="{% url 'add_to_cart' shop.slug product.id %}" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
-                    {% csrf_token %}
-                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" style="width: 100px;">
-                    <button type="submit" class="btn btn-primary" style="padding: 12px 32px;">🛒 Добавить в корзину</button>
-                </form>
-                
                 <div style="margin-bottom: 24px;">
                     {% if user.is_authenticated %}
                         {% load favorite_check %}
@@ -67,6 +69,8 @@
                         {% endif %}
                     {% endif %}
                 </div>
+            {% else %}
+                <span class="badge badge-danger">Нет в наличии</span>
             {% endif %}
             
             <div style="border-top: 1px solid var(--gray-200); padding-top: 24px;">
@@ -74,9 +78,11 @@
                 <p style="color: var(--gray-700); line-height: 1.6;">{{ product.description }}</p>
             </div>
             
-            <div style="margin-top: 24px;">
-                <a href="{% url 'favorites_list' shop.slug %}" style="color: var(--primary);">📋 Мои избранные товары</a>
-            </div>
+            {% if user.is_authenticated and user.id != shop.owner_id %}
+                <div style="margin-top: 24px;">
+                    <a href="{% url 'favorites_list' shop.slug %}" style="color: var(--primary);">📋 Мои избранные товары</a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

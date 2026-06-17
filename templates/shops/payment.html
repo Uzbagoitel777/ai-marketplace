@@ -1,11 +1,9 @@
-{% extends 'base.html' %}
+{% extends 'shops/shop_base.html' %}
 
 {% block title %}Оплата заказа - {{ shop.name }}{% endblock %}
 
 {% block content %}
 <div class="breadcrumbs">
-    <a href="/">Главная</a>
-    <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'shop_front' shop.slug %}">{{ shop.name }}</a>
     <span class="breadcrumbs-separator">›</span>
     <a href="{% url 'cart_view' shop.slug %}">Корзина</a>
@@ -18,32 +16,28 @@
 <h1>Оплата заказа #{{ order.id }}</h1>
 
 <div style="display: flex; gap: 32px; flex-wrap: wrap;">
-    <div style="flex: 1;">
+    <div style="flex: 1; min-width:300px;">
         <div class="card" style="margin-bottom: 24px;">
             <div class="card-body">
                 <h3>Информация о заказе</h3>
-                <div style="margin-top: 16px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <div style="margin-top: 16px; display:grid; gap:10px;">
+                    <div style="display: flex; justify-content: space-between; gap:12px;">
                         <span style="color: var(--gray-600);">Сумма к оплате:</span>
                         <span style="font-size: 24px; font-weight: 700; color: var(--primary);">{{ order.total_amount }} ₽</span>
                     </div>
-                    <div style="margin-bottom: 12px;">
-                        <span style="color: var(--gray-600);">Получатель:</span> {{ order.full_name }}
-                    </div>
-                    <div style="margin-bottom: 12px;">
-                        <span style="color: var(--gray-600);">Адрес:</span> {{ order.address }}
-                    </div>
+                    <div><span style="color: var(--gray-600);">Получатель:</span> {{ order.full_name }}</div>
+                    <div><span style="color: var(--gray-600);">Доставка:</span> {{ order.delivery_service }} — {{ order.delivery_price }} ₽</div>
+                    <div><span style="color: var(--gray-600);">Адрес:</span> {{ order.address }}</div>
                 </div>
             </div>
         </div>
-        
         <div class="card">
             <div class="card-body">
                 <h3>Состав заказа</h3>
                 <ul style="list-style: none; padding: 0; margin-top: 16px;">
                     {% for item in order.items.all %}
-                        <li style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                            <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                        <li style="display: flex; justify-content: space-between; margin-bottom: 12px; gap:12px;">
+                            <span>{{ item.product.name }} × {{ item.quantity }}</span>
                             <span style="font-weight: 500;">{{ item.total_price }} ₽</span>
                         </li>
                     {% endfor %}
@@ -51,62 +45,42 @@
             </div>
         </div>
     </div>
-    
-    <div style="flex: 1;">
+    <div style="flex: 1; min-width:320px;">
         <div class="card">
             <div class="card-body">
-                <h3>Способ оплаты</h3>
-                
-                <form method="post" action="{% url 'process_payment' shop.slug order.id %}">
+                <h3>Демо-оплата</h3>
+                <form method="post" action="{% url 'process_payment' shop.slug order.id %}" id="payment-form">
                     {% csrf_token %}
-                    
-                    <div style="margin-bottom: 16px;">
-                        <label style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;">
-                            <input type="radio" name="payment_method" value="card" checked style="width: 18px; height: 18px;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; margin-bottom: 4px;">Банковская карта</div>
-                                <div style="font-size: var(--font-size-sm); color: var(--gray-500);">Visa, Mastercard, МИР</div>
-                            </div>
-                        </label>
+                    <div style="display:grid; gap:12px; margin-bottom:18px;">
+                        <label style="display:flex; align-items:center; gap:12px; padding:14px; border:2px solid var(--gray-200); border-radius:var(--radius-md); cursor:pointer;"><input type="radio" name="payment_method" value="card" checked data-method="card"><div><strong>Банковская карта</strong><div style="font-size:var(--font-size-sm); color:var(--gray-500);">Visa, Mastercard, МИР</div></div></label>
+                        <label style="display:flex; align-items:center; gap:12px; padding:14px; border:2px solid var(--gray-200); border-radius:var(--radius-md); cursor:pointer;"><input type="radio" name="payment_method" value="sbp" data-method="sbp"><div><strong>СБП</strong><div style="font-size:var(--font-size-sm); color:var(--gray-500);">Тестовый перевод по номеру телефона</div></div></label>
+                        <label style="display:flex; align-items:center; gap:12px; padding:14px; border:2px solid var(--gray-200); border-radius:var(--radius-md); cursor:pointer;"><input type="radio" name="payment_method" value="cash" data-method="cash"><div><strong>При получении</strong><div style="font-size:var(--font-size-sm); color:var(--gray-500);">Наличные или терминал продавца</div></div></label>
                     </div>
-                    
-                    <div style="margin-bottom: 16px;">
-                        <label style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;">
-                            <input type="radio" name="payment_method" value="sbp" style="width: 18px; height: 18px;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; margin-bottom: 4px;">Система быстрых платежей</div>
-                                <div style="font-size: var(--font-size-sm); color: var(--gray-500);">Оплата по номеру телефона</div>
-                            </div>
-                        </label>
-                    </div>
-                    
-                    <div style="margin-bottom: 24px;">
-                        <label style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;">
-                            <input type="radio" name="payment_method" value="cash" style="width: 18px; height: 18px;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; margin-bottom: 4px;">Наличные при получении</div>
-                                <div style="font-size: var(--font-size-sm); color: var(--gray-500);">Оплата курьеру</div>
-                            </div>
-                        </label>
-                    </div>
-                    
-                    <div style="background: var(--primary-light); padding: 16px; border-radius: var(--radius-md); margin-bottom: 24px;">
-                        <div style="display: flex; gap: 8px;">
-                            <span>🔒</span>
-                            <span style="font-size: var(--font-size-sm);">Безопасное соединение</span>
+                    <div id="card-fields" style="background:linear-gradient(135deg,#111827,#374151); color:white; border-radius:20px; padding:18px; margin-bottom:18px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;"><strong>Данные карты</strong><span>TEST</span></div>
+                        <div class="form-group"><label class="form-label" style="color:white;">Номер карты</label><input type="text" name="card_number" class="form-control" inputmode="numeric" placeholder="2200 0000 0000 0000" maxlength="19"></div>
+                        <div class="form-group"><label class="form-label" style="color:white;">Имя владельца</label><input type="text" name="card_holder" class="form-control" placeholder="IVAN IVANOV"></div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div class="form-group"><label class="form-label" style="color:white;">Срок</label><input type="text" name="card_exp" class="form-control" placeholder="12/30" maxlength="5"></div>
+                            <div class="form-group"><label class="form-label" style="color:white;">CVV</label><input type="password" name="card_cvv" class="form-control" placeholder="123" maxlength="3"></div>
                         </div>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">
-                        Оплатить {{ order.total_amount }} ₽
-                    </button>
-                    
-                    <a href="{% url 'order_confirmation' shop.slug order.id %}" class="btn btn-secondary" style="width: 100%; margin-top: 12px;">
-                        Назад
-                    </a>
+                    <div style="background: var(--primary-light); padding: 16px; border-radius: var(--radius-md); margin-bottom: 24px;">
+                        <div style="display: flex; gap: 8px;"><span>🔒</span><span style="font-size: var(--font-size-sm);">Это демонстрационная форма. Данные карты не списываются и не сохраняются.</span></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">Оплатить {{ order.total_amount }} ₽</button>
+                    <a href="{% url 'order_confirmation' shop.slug order.id %}" class="btn btn-secondary" style="width: 100%; margin-top: 12px;">Назад</a>
                 </form>
             </div>
         </div>
     </div>
 </div>
+<script>
+    const cardFields = document.getElementById('card-fields');
+    document.querySelectorAll('input[name="payment_method"]').forEach((input) => {
+        input.addEventListener('change', () => {
+            cardFields.style.display = input.value === 'card' && input.checked ? 'block' : 'none';
+        });
+    });
+</script>
 {% endblock %}
